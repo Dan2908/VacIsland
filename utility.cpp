@@ -1,8 +1,8 @@
 #ifndef LOG
-#include <iostream>
 #define LOG(...) std::cerr << __VA_ARGS__ << std::endl
 #endif
 
+#include <iostream>
 #include "utility.h"
 
 char *read_file(const char *fileName){
@@ -30,6 +30,7 @@ char *read_file(const char *fileName){
     size_t result = fread(str, lSize, 1, f);
     if(result != lSize && !feof(f))
         LOG("File read failure!");
+    str[lSize - 1] = '\0';
     // Terminate
     fclose(f);
     return str;

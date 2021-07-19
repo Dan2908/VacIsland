@@ -3,10 +3,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <fstream>
-#include <memory>
 
-#include "utility.h"
 #include "glFunc.h"
 
 const int    WIDTH = 800, 
@@ -17,17 +14,10 @@ bool wireframe = false;
 
 //  -------------------------------- DECLARATIONS --------------------------------   //
 
-unsigned int get_shader(const char *source, unsigned int type);
-unsigned int get_program(const char *vs_src, const char *fs_src);
-/* Función para informar a OpenGL los cambios de dimensión y ubicación de la ventana.
-    Llama a glViewport() */
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 /* Entrada de teclado */
 void processInput(GLFWwindow *window);
-/* Verifica si la compilación del shader fue exitosa. Mustra error si no.*/
-bool shader_compiled(unsigned shader);
-/* Verifica si el enlace en el programa fue exitoso. Mustra error si no.*/
-bool program_linked(unsigned program);
+
 //  -------------------------------- APPLICATION --------------------------------   //
 
 int main(){
@@ -65,13 +55,16 @@ int main(){
         0, 1, 2,    // triangle 1
         2, 1, 3     // triangle 2
     };
-// Vertex Buffer Object VBO
-    unsigned int shaderProgram = get_program(vShader_path, fShader_path);
-    VBO buffer(vertices, sizeof(vertices));
-    EBO eBufer(indices, sizeof(indices));
-    VAO vao;
-    vao.linkVBO(buffer, 0);
 
+    ShaderProgram program(vShader_path, fShader_path);
+    VertexArrayObject VAO;
+    VertexBuffer VBO(vertices, sizeof(vertices));
+    ElementBuffer EBO(indices, sizeof(indices));
+
+    VAO.setVertexBuffer(VBO, 0);
+    VAO.enableAttribptr(0);
+
+    EBO.bind();
 
     while(!glfwWindowShouldClose(window)){
     // input
@@ -80,9 +73,10 @@ int main(){
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
-        glUseProgram(shaderProgram);
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        program.use();
+        //glUseProgram(shaderProgram);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        //glDrawArrays(GL_TRIANGLES, 0, 3);
     // events and swap buffers
         glfwSwapBuffers(window);
         glfwWaitEvents();
@@ -109,55 +103,4 @@ void processInput(GLFWwindow *window){
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         wireframe = !wireframe;
     }
-
-}
-
-unsigned int get_shader(const char *srcPath, GLenum type){
-    unsigned int shaderID = glCreateShader(type);
-    char *src = read_file(srcPath);
-    glShaderSource(shaderID, 1, &src, NULL);
-    glCompileShader(shaderID);
-    if(!shader_compiled(shaderID))
-        LOG( ((type == GL_VERTEX_SHADER) ? "VERTEX " : "FRAGMENT ") << "SHADER ERROR.");
-    free(src);
-    return shaderID;
-}
-
-unsigned int get_program(const char *vs_path, const char *fs_path){
-    unsigned int programID             = glCreateProgram(),
-                 VertexShader          = get_shader(vs_path, GL_VERTEX_SHADER),
-                 FragmentShader        = get_shader(fs_path, GL_FRAGMENT_SHADER);
-
-    glAttachShader(programID, VertexShader);
-    glAttachShader(programID, FragmentShader);
-    glLinkProgram(programID);
-
-    glDeleteShader(VertexShader);
-    glDeleteShader(FragmentShader);
-
-    return programID;
-}
-
-bool shader_compiled(unsigned shader){
-    int success;
-    char infoLog[512];
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if(!success){
-        glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        LOG("Error compilando shader: " << infoLog);
-        return false;
-    }
-    return true;
-}
-/* Verifica si el enlace en el programa fue exitoso. Mustra error si no.*/
-bool program_linked(unsigned program){
-    int success;
-    char infoLog[512];
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if(!success){
-        glGetProgramInfoLog(program, 512, NULL, infoLog);
-        LOG("Error linking program: " << infoLog);
-        return false;
-    }
-    return true;
 }
