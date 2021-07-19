@@ -3,6 +3,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <math.h>
 
 #include "glFunc.h"
 
@@ -45,6 +46,11 @@ int main(){
     glViewport(0,0,WIDTH, HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 // Dibujar
+    float triangle[] = {
+         0.0f,  0.5f, 0.0f, // top
+        -0.5f, -0.5f, 0.0f, //bottom left
+         0.5f, -0.5f, 0.0f
+    };
     float vertices[] = {
         -0.5f,  0.5f, 0.0f, // top left
         -0.5f, -0.5f, 0.0f, // bottom left
@@ -59,12 +65,15 @@ int main(){
     ShaderProgram program(vShader_path, fShader_path);
     VertexArrayObject VAO;
     VertexBuffer VBO(vertices, sizeof(vertices));
+    VertexBuffer Triangle(triangle, sizeof(triangle));
     ElementBuffer EBO(indices, sizeof(indices));
 
     VAO.setVertexBuffer(VBO, 0);
     VAO.enableAttribptr(0);
 
     EBO.bind();
+
+    int vertexColorLocation = glGetUniformLocation(program.ID, "myColor");
 
     while(!glfwWindowShouldClose(window)){
     // input
@@ -74,12 +83,16 @@ int main(){
         glClear(GL_COLOR_BUFFER_BIT);
         
         program.use();
-        //glUseProgram(shaderProgram);
+        float time = glfwGetTime();
+        float greenValue    = (sin(time/2.0f) / 2.0f) + 0.5f;
+        float redValue      = (cos(time/2.0f) / 2.0f) + 0.5f;
+        float blueValue      = (sin(time) / 2.0f) + 0.5f;
+        glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         //glDrawArrays(GL_TRIANGLES, 0, 3);
     // events and swap buffers
         glfwSwapBuffers(window);
-        glfwWaitEvents();
+        glfwPollEvents();
     }
 
     glfwTerminate();
