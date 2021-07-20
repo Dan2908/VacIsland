@@ -5,6 +5,9 @@
 #include <GLFW/glfw3.h>
 #include <math.h>
 
+#include "3rd_party/glm/glm.hpp"
+#include "3rd_party/glm/gtc/matrix_transform.hpp"
+#include "3rd_party/glm/gtc/type_ptr.hpp"
 #include "glFunc.h"
 
 const int    WIDTH = 800, 
@@ -47,9 +50,10 @@ int main(){
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 // Dibujar
     float triangle[] = {
-         0.0f,  0.5f, 0.0f, // top
-        -0.5f, -0.5f, 0.0f, //bottom left
-         0.5f, -0.5f, 0.0f
+        //#positions            #Colors
+         0.0f,  0.5f, 0.0f,     1.0f, 0.0f, 0.0f, // top
+        -0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f, //bottom left
+         0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f
     };
     float vertices[] = {
         -0.5f,  0.5f, 0.0f, // top left
@@ -64,16 +68,18 @@ int main(){
 
     ShaderProgram program(vShader_path, fShader_path);
     VertexArrayObject VAO;
-    VertexBuffer VBO(vertices, sizeof(vertices));
-    VertexBuffer Triangle(triangle, sizeof(triangle));
-    ElementBuffer EBO(indices, sizeof(indices));
+    VertexBuffer VBO(vertices, sizeof(vertices), 3);
+    VertexBuffer Triangle(triangle, sizeof(triangle), 6);
+    ElementBuffer EBO(indices, sizeof(indices), 3);
 
-    VAO.setVertexBuffer(VBO, 0);
+    //VAO.setVertexBuffer(VBO, 0);
+    VAO.setVertexBuffers(Triangle, 2, 3, 3);
     VAO.enableAttribptr(0);
+    VAO.enableAttribptr(1);
 
     EBO.bind();
 
-    int vertexColorLocation = glGetUniformLocation(program.ID, "myColor");
+    program.use();
 
     while(!glfwWindowShouldClose(window)){
     // input
@@ -82,14 +88,20 @@ int main(){
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
-        program.use();
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform = glm::rotate(transform, float(glfwGetTime()) , glm::vec3(0.0, 0.0, 1.0));
+        transform = glm::translate(transform, glm::vec3(0.5, -0.5, 0.5));
+    
+        glUniformMatrix4fv(glGetUniformLocation(program.ID, "transMatrix"), 1, GL_FALSE, glm::value_ptr(transform));
+        /*
         float time = glfwGetTime();
         float greenValue    = (sin(time/2.0f) / 2.0f) + 0.5f;
         float redValue      = (cos(time/2.0f) / 2.0f) + 0.5f;
         float blueValue      = (sin(time) / 2.0f) + 0.5f;
         glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
+        */
+        glDrawArrays(GL_TRIANGLES, 0, 3);
     // events and swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();

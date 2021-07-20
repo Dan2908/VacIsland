@@ -1,10 +1,14 @@
 #include "glFunc.h"
+#include <stdarg.h>
 
-BufferObject::BufferObject(GLenum type) : type(type) { glGenBuffers(1, &ID); }
+BufferObject::BufferObject(GLenum type, int stride) : type(type), stride(stride) 
+                                                     { glGenBuffers(1, &ID); }
 BufferObject::~BufferObject()                        { glDeleteBuffers(1, &ID); }
+template<typename T> 
+    int BufferObject::get_stride()                  { return stride * sizeof(T); }
 void BufferObject::bind()                            { glBindBuffer(type, ID); }
 void BufferObject::unbind()                          { glBindBuffer(type, 0); }
-void BufferObject::bufferData(long long size, const void* data)
+void BufferObject::bufferData(const void* data, long long size)
 {
     bind();
     glBufferData(type, size, data, GL_STATIC_DRAW);
@@ -12,13 +16,14 @@ void BufferObject::bufferData(long long size, const void* data)
 }
 
 //  Vertex Buffer
-VertexBuffer::VertexBuffer(float *vertices, long long size) : BufferObject(GL_ARRAY_BUFFER){
-    bufferData(size, vertices);
+VertexBuffer::VertexBuffer(float *vertices, long long size, int stride) : BufferObject(GL_ARRAY_BUFFER, stride){
+    bufferData(vertices, size);
 }
 //  Element Buffer
-ElementBuffer::ElementBuffer(unsigned int *indices, long long size) : BufferObject(GL_ELEMENT_ARRAY_BUFFER){
-    bufferData(size, indices);
+ElementBuffer::ElementBuffer(unsigned int *indices, long long size, int stride) : BufferObject(GL_ELEMENT_ARRAY_BUFFER, stride){
+    bufferData(indices, size);
 }
+
 //  Vertex Array Object.
 VertexArrayObject::VertexArrayObject()          { glGenVertexArrays(1, &ID); }
 VertexArrayObject::~VertexArrayObject()         { glDeleteVertexArrays(1, &ID); }
@@ -28,7 +33,23 @@ void VertexArrayObject::setVertexBuffer(VertexBuffer &VBO, int layout)
 {
     bind();
     VBO.bind();
-    glVertexAttribPointer(layout, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(layout, 3, GL_FLOAT, GL_FALSE, VBO.get_stride<float>(), (void*)0);
+    VBO.unbind();
+    unbind();
+}
+void VertexArrayObject::setVertexBuffers(VertexBuffer &VBO, int n, ...)
+{
+    bind();
+    VBO.bind();
+    va_list vl;
+    va_start(vl, n);
+    int offset = 0, size;
+    for(int layout = 0; layout < n; layout++){
+        size = va_arg(vl, int);
+        glVertexAttribPointer(layout, size, GL_FLOAT, GL_FALSE, VBO.get_stride<float>(), (void*)(offset * sizeof(float)));
+        offset += size;
+    }
+    va_end(vl);
     VBO.unbind();
     unbind();
 }

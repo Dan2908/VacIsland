@@ -7,24 +7,27 @@
 /** Base Buffer Object class*/
 class BufferObject{
     GLenum type;
+    int stride;
 public:
     unsigned int ID;
-    BufferObject(GLenum type);
+    BufferObject(GLenum type, int stride);
     ~BufferObject();
+    template<typename T>
+    int get_stride();
     void bind();
     void unbind();
 protected:
-    void bufferData(long long size, const void* data);
+    void bufferData(const void* data, long long size);
 };
 
 class VertexBuffer : public BufferObject{
 public:
-    VertexBuffer(float *vertices, long long size);
+    VertexBuffer(float *vertices, long long size, int stride);
 };
 
 class ElementBuffer : public BufferObject{
 public:
-    ElementBuffer(unsigned int *indices, long long size);
+    ElementBuffer(unsigned int *indices, long long size, int stride);
 };
 
 class VertexArrayObject{
@@ -33,6 +36,7 @@ public:
     VertexArrayObject();
     ~VertexArrayObject();
     void setVertexBuffer(VertexBuffer &VBO, int layout);
+    void setVertexBuffers(VertexBuffer &VBO, int n, ...);
     void enableAttribptr(int layout);
     void disableAttribptr(int layout);
     void bind();
@@ -60,5 +64,6 @@ public:
     ~ShaderProgram();
     void use();
 };
+
 
 #endif
