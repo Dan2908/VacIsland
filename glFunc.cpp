@@ -1,5 +1,6 @@
 #include "glFunc.h"
 #include <stdarg.h>
+#include "3rd_party/stb_image.h"
 
 BufferObject::BufferObject(GLenum type, int stride) : type(type), stride(stride) 
                                                      { glGenBuffers(1, &ID); }
@@ -63,6 +64,33 @@ void VertexArrayObject::disableAttribptr(int layout)
     glDisableVertexAttribArray(layout);
     unbind();
 }
+/* =======================\\
+ * \\   TEXTURE            \\
+    \\======================*/
+
+Texture::Texture(const char *img_path)
+{ 
+    glGenTextures(1, &ID); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    int w, h, nrChannels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char *data = stbi_load(img_path, &w, &h, &nrChannels, 0);
+    if(data){
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else{
+        std::cerr << "failed to load texture..." << std::endl;
+    }
+    stbi_image_free(data);
+}
+
+Texture::~Texture();
 
 Shader::Shader(unsigned int type, const char* path) : ID(glCreateShader(type))
 {
@@ -112,5 +140,9 @@ void ShaderProgram::check_error(){
 
 void ShaderProgram::use(){
     glUseProgram(ID);
+}
+
+void ShaderProgram::setMat4(const char *sName, const float *data){
+    glUniformMatrix4fv(glGetUniformLocation(ID, sName), 1, GL_FALSE, data);
 }
 

@@ -43,6 +43,14 @@ public:
     void unbind();
 };
 
+class Texture{
+    
+public:
+    unsigned int ID;
+    Texture(const char *img_path);
+    ~Texture();
+};
+
 class Shader{
     int compile_status;
     void check_error();
@@ -63,6 +71,12 @@ public:
     ShaderProgram(const char *vs_path, const char *fs_path);
     ~ShaderProgram();
     void use();
+    /** Search for the uniform variable named as {sName} in glsl file
+     * and pass {data} to the shader.
+     * @param sName Uniform mat4 variable name in glsl to be written.
+     * @param data *Pointer to (float) data matrix.
+    */
+    void setMat4(const char *sName, const float *data);
 };
 
 

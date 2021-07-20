@@ -10,11 +10,57 @@
 #include "3rd_party/glm/gtc/type_ptr.hpp"
 #include "glFunc.h"
 
-const int    WIDTH = 800, 
-             HEIGHT = 600;
-const char  *vShader_path = "shader/vertex.glsl",
-            *fShader_path = "shader/fragment.glsl";
-bool wireframe = false;
+const int       WIDTH = 800, 
+                HEIGHT = 600;
+const char  *   vShader_path = "shader/vertex.glsl",
+            *   fShader_path = "shader/fragment.glsl";
+static bool     wireframe    = false;
+static float    angle        = 45.0f,
+                model_angle  = -55.0f;
+
+float cube[] = {
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+};
 
 //  -------------------------------- DECLARATIONS --------------------------------   //
 
@@ -70,14 +116,18 @@ int main(){
     VertexArrayObject VAO;
     VertexBuffer VBO(vertices, sizeof(vertices), 3);
     VertexBuffer Triangle(triangle, sizeof(triangle), 6);
+    VertexBuffer Cube(cube, sizeof(cube), 5);
     ElementBuffer EBO(indices, sizeof(indices), 3);
 
     //VAO.setVertexBuffer(VBO, 0);
-    VAO.setVertexBuffers(Triangle, 2, 3, 3);
+    VAO.setVertexBuffers(Cube, 2, 3, 2);
     VAO.enableAttribptr(0);
     VAO.enableAttribptr(1);
+   //EBO.bind();
+    //Matrixes
 
-    EBO.bind();
+    
+
 
     program.use();
 
@@ -88,12 +138,23 @@ int main(){
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 projection = glm::mat4(1.0f);;
+    
+        model = glm::rotate(model, glm::radians(model_angle), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        projection = glm::perspective(glm::radians(angle), float(WIDTH) / float(HEIGHT), 0.1f, 100.0f); 
+        
+        program.setMat4("model", glm::value_ptr(model));
+        program.setMat4("view", glm::value_ptr(view));
+        program.setMat4("projection", glm::value_ptr(projection));
+        /*
         glm::mat4 transform = glm::mat4(1.0f);
         transform = glm::rotate(transform, float(glfwGetTime()) , glm::vec3(0.0, 0.0, 1.0));
         transform = glm::translate(transform, glm::vec3(0.5, -0.5, 0.5));
     
         glUniformMatrix4fv(glGetUniformLocation(program.ID, "transMatrix"), 1, GL_FALSE, glm::value_ptr(transform));
-        /*
         float time = glfwGetTime();
         float greenValue    = (sin(time/2.0f) / 2.0f) + 0.5f;
         float redValue      = (cos(time/2.0f) / 2.0f) + 0.5f;
@@ -101,7 +162,7 @@ int main(){
         glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         */
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
     // events and swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -127,5 +188,21 @@ void processInput(GLFWwindow *window){
         else
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         wireframe = !wireframe;
+    }
+    if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        angle += 0.01f;
+    }
+    if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        angle -= 0.01f;
+    }
+    if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    {
+        model_angle += 0.01f;
+    }
+    if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    {
+        model_angle -= 0.01f;
     }
 }
