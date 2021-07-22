@@ -1,4 +1,5 @@
 #define LOG(...) std::cerr << __VA_ARGS__ << std::endl
+#define VEC_AXIS(x) float(x == X_AXIS), float(x == Y_AXIS), float(x == Z_AXIS)
 
 #include <iostream>
 #include <GL/glew.h>
@@ -13,10 +14,17 @@
 const int       WIDTH = 800, 
                 HEIGHT = 600;
 const char  *   vShader_path = "shader/vertex.glsl",
-            *   fShader_path = "shader/fragment.glsl";
+            *   fShader_path = "shader/fragment.glsl",
+            *   texture_path = "res/img/wall.jpg";
 static bool     wireframe    = false;
 static float    angle        = 45.0f,
                 model_angle  = -55.0f;
+
+enum AXIS{
+    X_AXIS = 10,
+    Y_AXIS, 
+    Z_AXIS
+};
 
 float cube[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -66,7 +74,9 @@ float cube[] = {
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 /* Entrada de teclado */
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window, glm::mat4 &model);
+
+void rotate_model(glm::mat4 &model, float radians, AXIS axis);
 
 //  -------------------------------- APPLICATION --------------------------------   //
 
@@ -125,24 +135,28 @@ int main(){
     VAO.enableAttribptr(1);
    //EBO.bind();
     //Matrixes
-
     
-
 
     program.use();
+    
+    Texture texture(texture_path);
+    glEnable(GL_DEPTH_TEST); 
 
+    glm::mat4 model = glm::mat4(1.0f);
     while(!glfwWindowShouldClose(window)){
     // input
-        processInput(window);
     // rendering
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        
-        glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = glm::mat4(1.0f);
-        glm::mat4 projection = glm::mat4(1.0f);;
+        glm::mat4 projection = glm::mat4(1.0f);
+        processInput(window, model);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        glBindTexture(GL_TEXTURE_2D, texture.ID);
+
     
-        model = glm::rotate(model, glm::radians(model_angle), glm::vec3(1.0f, 0.0f, 0.0f));
+        // model = glm::rotate(model, glm::radians(model_angle), glm::vec3(1.0f, 0.0f, 0.0f));
+
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         projection = glm::perspective(glm::radians(angle), float(WIDTH) / float(HEIGHT), 0.1f, 100.0f); 
         
@@ -165,7 +179,7 @@ int main(){
         glDrawArrays(GL_TRIANGLES, 0, 36);
     // events and swap buffers
         glfwSwapBuffers(window);
-        glfwPollEvents();
+        glfwWaitEvents();
     }
 
     glfwTerminate();
@@ -178,7 +192,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height){
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window){
+void processInput(GLFWwindow *window, glm::mat4 &model){
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
         glfwSetWindowShouldClose(window, true);
     }
@@ -191,18 +205,28 @@ void processInput(GLFWwindow *window){
     }
     if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        angle += 0.01f;
+        model_angle += 0.01f;
+        rotate_model(model, glm::radians(model_angle), Y_AXIS);
     }
     if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        angle -= 0.01f;
+        model_angle -= 0.05f;
+        rotate_model(model, glm::radians(model_angle), X_AXIS);
     }
     if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-        model_angle += 0.01f;
+        model_angle += 0.05f;
+        rotate_model(model, glm::radians(model_angle), Y_AXIS);
     }
     if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-        model_angle -= 0.01f;
+        model_angle -= 0.05f;
+        rotate_model(model, glm::radians(model_angle), Y_AXIS);
     }
+}
+
+void rotate_model(glm::mat4 &model, float radians, AXIS axis){
+    glm::vec3 ax(VEC_AXIS(axis));
+    LOG(ax.x << ", " << ax.y << ", " << ax.z);
+    model = glm::rotate(model, radians, ax);
 }

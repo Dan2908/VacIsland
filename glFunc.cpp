@@ -1,5 +1,6 @@
 #include "glFunc.h"
 #include <stdarg.h>
+#define STB_IMAGE_IMPLEMENTATION
 #include "3rd_party/stb_image.h"
 
 BufferObject::BufferObject(GLenum type, int stride) : type(type), stride(stride) 
@@ -64,13 +65,16 @@ void VertexArrayObject::disableAttribptr(int layout)
     glDisableVertexAttribArray(layout);
     unbind();
 }
+
 /* =======================\\
  * \\   TEXTURE            \\
-    \\======================*/
+ *  \\======================*/
 
 Texture::Texture(const char *img_path)
 { 
-    glGenTextures(1, &ID); 
+    glGenTextures(1, &ID);
+    glBindTexture(GL_TEXTURE_2D, ID);
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     // set texture filtering parameters
@@ -81,7 +85,7 @@ Texture::Texture(const char *img_path)
     stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load(img_path, &w, &h, &nrChannels, 0);
     if(data){
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else{
@@ -90,7 +94,7 @@ Texture::Texture(const char *img_path)
     stbi_image_free(data);
 }
 
-Texture::~Texture();
+Texture::~Texture(){}
 
 Shader::Shader(unsigned int type, const char* path) : ID(glCreateShader(type))
 {

@@ -1,28 +1,42 @@
 #include <iostream>
+#include <fstream>
 
 #define LOG(...) std::cerr << __VA_ARGS__ << std::endl
 
-const char *vs_path = "shader/vertex.glsl",
-           *fs_path = "shader/fragment.glsl";
+const float triangle[] = {
+        //#positions            #Colors
+         0.0f,  0.5f, 0.0f,     1.0f, 0.0f, 0.0f, // top
+        -0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f, //bottom left
+         0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f
+    };
+
+template<typename T>
+void print_values(T *array, int size, int stride){
+    for(int i = 0; i < size; i += stride){
+        for(int j = 0; j < stride - 1; j++){
+            printf("%.1lf,\t", array[i + j]);
+        }
+        printf("%.1lf;\n", array[i + stride - 1 ]);
+    }
+}
+
+const char *path = "triangle.dat";
 
 int main(){
-    FILE *f = fopen(vs_path, "r");
-    long lSize;
-    char *str;
 
-    //File size
-    fseek(f, 0, SEEK_END);
-    lSize = ftell(f);
-    rewind(f);
+    FILE *f = fopen(path, "wb+");
+    long lSize = sizeof(triangle);
+    
+    fwrite(triangle, lSize, 1, f);
 
-    str = (char*)malloc(sizeof(char)*lSize);
-    if(str == NULL) LOG("Memory allocation failure");
+    fclose(f);
+    float t[18];
+    //reopen
+    f = fopen(path, "rb");
 
-    fread(str, lSize, 1, f);
+    fread(t, lSize, 1, f);
 
-    for(int i = 0; str[i] != '\0'; i++){
-        printf("%c", str[i]);
-    }
+    print_values(t, 18, 6);
 
     fclose(f);
     return EXIT_SUCCESS;

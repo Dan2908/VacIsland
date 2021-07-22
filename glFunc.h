@@ -3,6 +3,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include "utility.h"
+#include "3rd_party/stb_image.h"
 
 /** Base Buffer Object class*/
 class BufferObject{
