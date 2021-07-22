@@ -1,7 +1,8 @@
 #include "glFunc.h"
-#include <stdarg.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "3rd_party/stb_image.h"
+#include "utility.h"
 
 BufferObject::BufferObject(GLenum type, int stride) : type(type), stride(stride) 
                                                      { glGenBuffers(1, &ID); }
@@ -21,6 +22,12 @@ void BufferObject::bufferData(const void* data, long long size)
 VertexBuffer::VertexBuffer(float *vertices, long long size, int stride) : BufferObject(GL_ARRAY_BUFFER, stride){
     bufferData(vertices, size);
 }
+VertexBuffer::VertexBuffer(const char *file_path, long long size, int stride) : BufferObject(GL_ARRAY_BUFFER, stride){
+    float *data = util::read_data<float>(file_path);
+    bufferData(data, size);
+    free(data);
+}
+
 //  Element Buffer
 ElementBuffer::ElementBuffer(unsigned int *indices, long long size, int stride) : BufferObject(GL_ELEMENT_ARRAY_BUFFER, stride){
     bufferData(indices, size);
@@ -110,7 +117,7 @@ void Shader::check_error(){
     }
 }
 void Shader::compile(const char *path){
-    char *src = read_file(path);
+    char *src = util::read_file(path);
     glShaderSource(ID, 1, &src, NULL);
     glCompileShader(ID);
     glGetShaderiv(ID, GL_COMPILE_STATUS, &compile_status);

@@ -1,9 +1,9 @@
 #ifndef H_VBO
 #define H_VBO
+
 #include <iostream>
 #include <GL/glew.h>
-#include "utility.h"
-#include "3rd_party/stb_image.h"
+#include <stdarg.h>
 
 /** Base Buffer Object class*/
 class BufferObject{
@@ -24,6 +24,7 @@ protected:
 class VertexBuffer : public BufferObject{
 public:
     VertexBuffer(float *vertices, long long size, int stride);
+    VertexBuffer(const char *file_path, long long size, int stride);
 };
 
 class ElementBuffer : public BufferObject{

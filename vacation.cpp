@@ -126,7 +126,7 @@ int main(){
     VertexArrayObject VAO;
     VertexBuffer VBO(vertices, sizeof(vertices), 3);
     VertexBuffer Triangle(triangle, sizeof(triangle), 6);
-    VertexBuffer Cube(cube, sizeof(cube), 5);
+    VertexBuffer Cube("res/asset/cube.dat", 180, 5);
     ElementBuffer EBO(indices, sizeof(indices), 3);
 
     //VAO.setVertexBuffer(VBO, 0);
