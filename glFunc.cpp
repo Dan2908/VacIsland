@@ -1,14 +1,16 @@
-#include "glFunc.h"
+#include <iostream>
+#include <GL/glew.h>
+#include <stdarg.h>
+
 
 #define STB_IMAGE_IMPLEMENTATION
+#include "glFunc.h"
 #include "3rd_party/stb_image.h"
 #include "utility.h"
 
-BufferObject::BufferObject(GLenum type, int stride) : type(type), stride(stride) 
+BufferObject::BufferObject(unsigned int type, int stride) : type(type), stride(stride) 
                                                      { glGenBuffers(1, &ID); }
-BufferObject::~BufferObject()                        { glDeleteBuffers(1, &ID); }
-template<typename T> 
-    int BufferObject::get_stride()                  { return stride * sizeof(T); }
+BufferObject::~BufferObject()                        { glDeleteBuffers(1, &ID); }         
 void BufferObject::bind()                            { glBindBuffer(type, ID); }
 void BufferObject::unbind()                          { glBindBuffer(type, 0); }
 void BufferObject::bufferData(const void* data, long long size)

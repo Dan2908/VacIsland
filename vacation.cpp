@@ -26,55 +26,11 @@ enum AXIS{
     Z_AXIS
 };
 
-float cube[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-};
-
 //  -------------------------------- DECLARATIONS --------------------------------   //
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 /* Entrada de teclado */
-void processInput(GLFWwindow *window, glm::mat4 &model);
+void processInput(GLFWwindow *window);
 
 void rotate_model(glm::mat4 &model, float radians, AXIS axis);
 
@@ -122,11 +78,18 @@ int main(){
         2, 1, 3     // triangle 2
     };
 
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.5f,  0.5f, 0.0f), 
+        glm::vec3( 0.5f, -0.5f, 0.0f),
+        glm::vec3(-0.5f,  0.5f, 0.0f),  
+        glm::vec3(-0.5f, -0.5f, 0.0f) 
+    };
+
     ShaderProgram program(vShader_path, fShader_path);
     VertexArrayObject VAO;
     VertexBuffer VBO(vertices, sizeof(vertices), 3);
     VertexBuffer Triangle(triangle, sizeof(triangle), 6);
-    VertexBuffer Cube("res/asset/cube.dat", 180, 5);
+    VertexBuffer Cube("res/asset/cube.dat", 180 * sizeof(float), 5);
     ElementBuffer EBO(indices, sizeof(indices), 3);
 
     //VAO.setVertexBuffer(VBO, 0);
@@ -142,27 +105,37 @@ int main(){
     Texture texture(texture_path);
     glEnable(GL_DEPTH_TEST); 
 
-    glm::mat4 model = glm::mat4(1.0f);
     while(!glfwWindowShouldClose(window)){
     // input
     // rendering
+        glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
-        processInput(window, model);
+        processInput(window);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         glBindTexture(GL_TEXTURE_2D, texture.ID);
 
-    
+
         // model = glm::rotate(model, glm::radians(model_angle), glm::vec3(1.0f, 0.0f, 0.0f));
 
+        model = glm::rotate(model, glm::radians(45.0f), glm::vec3(1.0f, 1.0f, 0.0f) );
+        projection = glm::perspective(glm::radians(55.0f), float(WIDTH) / float(HEIGHT), 0.1f, 100.0f); 
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        projection = glm::perspective(glm::radians(angle), float(WIDTH) / float(HEIGHT), 0.1f, 100.0f); 
         
         program.setMat4("model", glm::value_ptr(model));
         program.setMat4("view", glm::value_ptr(view));
         program.setMat4("projection", glm::value_ptr(projection));
+
+        for(int i = 0; i < 4; i++){
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(1.0f*i, 0.0f, 0.0f) );
+            program.setMat4("model", glm::value_ptr(model));
+            program.setMat4("view", glm::value_ptr(view));
+            program.setMat4("projection", glm::value_ptr(projection));
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
         /*
         glm::mat4 transform = glm::mat4(1.0f);
         transform = glm::rotate(transform, float(glfwGetTime()) , glm::vec3(0.0, 0.0, 1.0));
@@ -175,9 +148,21 @@ int main(){
         float blueValue      = (sin(time) / 2.0f) + 0.5f;
         glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        for(unsigned int i = 0; i < 4; i++){
+            
+            glm::mat4 model = glm::mat4(1.0f);
+
+            model = glm::translate(model, cubePositions[i] );
+            model = glm::rotate(model, glm::radians(55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+
+            program.setMat4("model", glm::value_ptr(model));
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
         */
-        glDrawArrays(GL_TRIANGLES, 0, 36);
     // events and swap buffers
+
         glfwSwapBuffers(window);
         glfwWaitEvents();
     }
@@ -192,7 +177,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height){
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window, glm::mat4 &model){
+void processInput(GLFWwindow *window){
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
         glfwSetWindowShouldClose(window, true);
     }
@@ -203,30 +188,4 @@ void processInput(GLFWwindow *window, glm::mat4 &model){
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         wireframe = !wireframe;
     }
-    if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    {
-        model_angle += 0.01f;
-        rotate_model(model, glm::radians(model_angle), Y_AXIS);
-    }
-    if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    {
-        model_angle -= 0.05f;
-        rotate_model(model, glm::radians(model_angle), X_AXIS);
-    }
-    if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-    {
-        model_angle += 0.05f;
-        rotate_model(model, glm::radians(model_angle), Y_AXIS);
-    }
-    if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-    {
-        model_angle -= 0.05f;
-        rotate_model(model, glm::radians(model_angle), Y_AXIS);
-    }
-}
-
-void rotate_model(glm::mat4 &model, float radians, AXIS axis){
-    glm::vec3 ax(VEC_AXIS(axis));
-    LOG(ax.x << ", " << ax.y << ", " << ax.z);
-    model = glm::rotate(model, radians, ax);
 }

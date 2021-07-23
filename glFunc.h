@@ -1,9 +1,6 @@
 #ifndef H_VBO
 #define H_VBO
 
-#include <iostream>
-#include <GL/glew.h>
-#include <stdarg.h>
 
 /** Base Buffer Object class*/
 class BufferObject{
@@ -11,10 +8,10 @@ class BufferObject{
     int stride;
 public:
     unsigned int ID;
-    BufferObject(GLenum type, int stride);
+    BufferObject(unsigned int type, int stride);
     ~BufferObject();
     template<typename T>
-    int get_stride();
+    int get_stride() { return stride * sizeof(T); }
     void bind();
     void unbind();
 protected:

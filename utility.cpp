@@ -57,24 +57,3 @@ const int util::safe_fclose(FILE *stream){
     fclose(stream);
     return ret;
 }
-
-template<typename T>
-int util::save_data(const char *file_path, T &data, size_t size){
-    FILE *f = safe_fopen(file_path, "wb+");
-    
-    fwrite(data, size, 1, f);
-
-    return safe_fclose(f);
-}
-
-template<typename T>
-T*  util::read_data(const char *file_path){
-    FILE *f = safe_fopen(file_path, "rb");
-    size_t size = get_file_size(f);
-    
-    T* res = (T*)malloc(size);
-    fread(res, size, 1, f);
-
-    safe_fclose(f); 
-    return res;
-}
