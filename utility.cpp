@@ -5,8 +5,6 @@
 #include <iostream>
 #include "utility.h"
 
-
-
 char* util::read_file(const char *fileName){
     FILE *f;
     long lSize;

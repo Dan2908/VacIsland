@@ -3,113 +3,64 @@
 
 #define LOG(...) std::cerr << __VA_ARGS__ << std::endl
 
-float cube[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+template<typename T>
+struct m_pos{
+    int x, y, z;
+    m_pos(T x, T y, T z) : x(x), y(y), z(z) {}
+    m_pos(T x, T y) : x(x), y(y), z(0) {}
+    ~m_pos() {}
 };
 
-const float triangle[] = {
-        //#positions            #Colors
-         0.0f,  0.5f, 0.0f,     1.0f, 0.0f, 0.0f, // top
-        -0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f, //bottom left
-         0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f
-    };
-
-const size_t get_file_size(FILE *f) {
-    fseek(f, 0, SEEK_END);
-    size_t output = ftell(f);
-    rewind(f);
-    return output;
-}
-
-FILE *safe_fopen(const char* path, const char* mode){
-    FILE *f = fopen(path, mode);
-    if(f == NULL)
-        perror("File Error.");
-    return f;
-}
-
-const int safe_fclose(FILE *file){
-    int ret = ferror(file);
-    fclose(file);
-    return ret;
-}
-
 template<typename T>
-void print_values(T *array, int size, int stride){
-    for(int i = 0; i < size; i += stride){
-        for(int j = 0; j < stride - 1; j++){
-            printf("%.1lf,\t", array[i + j]);
-        }
-        printf("%.1lf;\n", array[i + stride - 1 ]);
+class Point{
+    T *arr_PCT; // positions(3) colors(3) texture(2)
+public:
+    Point()             : arr_PCT((T*)calloc(8, sizeof(T))) 
+    {}
+    Point(m_pos<T> pos) : Point()
+    { 
+        set_pos(pos); 
     }
-}
+    ~Point() 
+    { 
+        free(arr_PCT);
+    }
+    // methods //
+    T* getArray()
+    {
+        return arr_PCT;
+    }
+    void set_pos(m_pos<T> pos){
+        arr_PCT[0] = pos.x;
+        arr_PCT[1] = pos.y;
+        arr_PCT[2] = pos.z;
+    }
+    void set_color(m_pos<T> color){
+        arr_PCT[3] = color.x;
+        arr_PCT[4] = color.y;
+        arr_PCT[5] = color.z;
+    }
+    void set_texture(m_pos<T> texture){
+        arr_PCT[6] = texture.x;
+        arr_PCT[7] = texture.y;
+    }
+    T* project_point(){
+        T *ret(this);
+    }
+};
 
-template<typename T>
-int save_data(const char *file_path, T &data, size_t size){
-    FILE *f = safe_fopen(file_path, "wb+");
-    
-    fwrite(data, size, 1, f);
-
-    return safe_fclose(f);
-}
-template<typename T>
-T* read_data(const char *file_path){
-    FILE *f = safe_fopen(file_path, "rb");
-    size_t size = get_file_size(f);
-    
-    T* res = (T*)malloc(size);
-    fread(res, size, 1, f);
-
-    safe_fclose(f); 
-    return res;
-}
 
 const char *path = "res/asset/cube.dat";
 
+void get_point(){
+
+}
+
 int main(){
+    Point<float> p(m_pos<float>(1, -7, -7));
 
-    float *cube = read_data<float>("res/asset/cube.dat");
-    LOG(sizeof(cube));
-
+    for(int i = 0; i < 8; i++){
+        LOG(p.getArray()[i]);
+    }
     return EXIT_SUCCESS;
 }
