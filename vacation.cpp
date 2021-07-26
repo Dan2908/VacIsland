@@ -17,8 +17,7 @@ const char  *   vShader_path = "shader/vertex.glsl",
             *   fShader_path = "shader/fragment.glsl",
             *   texture_path = "res/img/wall.jpg";
 static bool     wireframe    = false;
-static float    angle        = 45.0f,
-                model_angle  = -55.0f;
+static float    zoom         = 1.0f;
 
 enum AXIS{
     X_AXIS = 10,
@@ -30,6 +29,8 @@ enum AXIS{
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 /* Entrada de teclado */
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 void processInput(GLFWwindow *window);
 
 void rotate_model(glm::mat4 &model, float radians, AXIS axis);
@@ -60,6 +61,8 @@ int main(){
 
     glViewport(0,0,WIDTH, HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
 // Dibujar
     float triangle[] = {
         //#positions            #Colors
@@ -93,17 +96,14 @@ int main(){
     ElementBuffer EBO(indices, sizeof(indices), 3);
 
     //VAO.setVertexBuffer(VBO, 0);
-    VAO.setVertexBuffers(Cube, 2, 3, 2);
+    VAO.setVertexBuffers(VBO, 1, 3);
     VAO.enableAttribptr(0);
-    VAO.enableAttribptr(1);
-   //EBO.bind();
+    EBO.bind();
     //Matrixes
     
 
     program.use();
-    
-    Texture texture(texture_path);
-    glEnable(GL_DEPTH_TEST); 
+    //Texture texture(texture_path); 
 
     while(!glfwWindowShouldClose(window)){
     // input
@@ -113,29 +113,33 @@ int main(){
         glm::mat4 projection = glm::mat4(1.0f);
         processInput(window);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
         
-        glBindTexture(GL_TEXTURE_2D, texture.ID);
+        model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, zoom));
 
-
-        // model = glm::rotate(model, glm::radians(model_angle), glm::vec3(1.0f, 0.0f, 0.0f));
-
-        model = glm::rotate(model, glm::radians(45.0f), glm::vec3(1.0f, 1.0f, 0.0f) );
-        projection = glm::perspective(glm::radians(55.0f), float(WIDTH) / float(HEIGHT), 0.1f, 100.0f); 
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        
         program.setMat4("model", glm::value_ptr(model));
         program.setMat4("view", glm::value_ptr(view));
         program.setMat4("projection", glm::value_ptr(projection));
 
-        for(int i = 0; i < 4; i++){
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(1.0f*i, 0.0f, 0.0f) );
-            program.setMat4("model", glm::value_ptr(model));
-            program.setMat4("view", glm::value_ptr(view));
-            program.setMat4("projection", glm::value_ptr(projection));
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+        int cols = 10, rows = 10;
+        float size = 0.5f;
+        float middle = cols * size / 2;
+
+        float x_off = -middle;
+        while(x_off < middle){
+            program.setFloat("x_offset", x_off);
+            float y_off = -middle;
+            while(y_off < middle){
+                program.setFloat("y_offset", y_off);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+                y_off += size;
+            }
+            x_off += size;
         }
+
+        
         /*
         glm::mat4 transform = glm::mat4(1.0f);
         transform = glm::rotate(transform, float(glfwGetTime()) , glm::vec3(0.0, 0.0, 1.0));
@@ -176,6 +180,12 @@ int main(){
 void framebuffer_size_callback(GLFWwindow *window, int width, int height){
     glViewport(0, 0, width, height);
 }
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    zoom += yoffset;
+}
+
 
 void processInput(GLFWwindow *window){
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){

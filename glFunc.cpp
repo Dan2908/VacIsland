@@ -159,3 +159,11 @@ void ShaderProgram::setMat4(const char *sName, const float *data){
     glUniformMatrix4fv(glGetUniformLocation(ID, sName), 1, GL_FALSE, data);
 }
 
+void ShaderProgram::setVec3(const char *sName, const float *data){
+    glUniform3fv(glGetUniformLocation(ID, sName), 1, data);
+}
+
+void ShaderProgram::setFloat(const char *sName, const float data){
+    glUniform1f(glGetUniformLocation(ID, sName), data);
+}
+

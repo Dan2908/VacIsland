@@ -76,6 +76,8 @@ public:
      * @param data *Pointer to (float) data matrix.
     */
     void setMat4(const char *sName, const float *data);
+    void setVec3(const char *sName, const float *data);
+    void setFloat(const char *sName, const float data);
 };
 
 
