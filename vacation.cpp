@@ -17,7 +17,11 @@ const char  *   vShader_path = "shader/vertex.glsl",
             *   fShader_path = "shader/fragment.glsl",
             *   texture_path = "res/img/wall.jpg";
 static bool     wireframe    = false;
-static float    zoom         = 1.0f;
+static float    zoom         = 1.0f,
+                camX         = 0.0f;
+glm::vec3       camPos(0.0f, 0.0f, zoom), 
+                camTarget(0.0f, 0.0f, 0.0f),
+                camUp(0.0f, 1.0f, 0.0f); 
 
 enum AXIS{
     X_AXIS = 10,
@@ -117,7 +121,13 @@ int main(){
         
         model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, zoom));
+        //view = glm::translate(view, glm::vec3(0.0f, 0.0f, zoom));
+
+        camPos.x = sin(camX);
+        camPos.z = cos(zoom) + zoom;
+        
+        view = glm::lookAt(camPos, camTarget, camUp);
+
 
         program.setMat4("model", glm::value_ptr(model));
         program.setMat4("view", glm::value_ptr(view));
@@ -183,7 +193,18 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height){
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    zoom += yoffset;
+    if(yoffset){
+        float value = 4*yoffset + zoom;
+        if(value < 1){
+            zoom = 1;
+            return;
+        }
+        if(value > 13){
+            zoom = 13;
+            return;
+        }
+        zoom = value;
+    }
 }
 
 
@@ -197,5 +218,9 @@ void processInput(GLFWwindow *window){
         else
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         wireframe = !wireframe;
+    }
+    if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
+        camX += 0.5f;
+        zoom += 0.5f;
     }
 }
