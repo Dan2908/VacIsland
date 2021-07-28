@@ -3,126 +3,117 @@
 
 #define LOG(...) std::cerr << __VA_ARGS__ << std::endl
 
-class m_pos{
-public:
-    float x, y, z;
-    m_pos(float x, float y, float z) : x(x), y(y), z(z) {}
-    m_pos(float x, float y) : x(x), y(y), z(0) {}
-    ~m_pos() {}
-    friend m_pos operator+(m_pos one, m_pos other){
-        return m_pos(one.x + other.x, one.y + other.y, one.z + other.z);
+enum DATA_PTR : int {
+    NONE = -1,
+    POS_X, POS_Y, POS_Z,    // Positions
+    COL_X, COL_Y, COL_Z,    // Colors
+    TEX_X, TEX_Y,           // Texture
+    ARRAY_SIZE              // Array size
+};
+
+struct Vertice{
+    float data[ARRAY_SIZE];
+    Vertice()
+    {   // zero-fill
+        for(int i = 0; i < ARRAY_SIZE; i++) { data[i] = 0.0f; }
+    }
+    Vertice(float x, float y, float z)  :   Vertice()
+    {   
+        set_position(x, y, z);
+    }
+    void set_position(float x, float y, float z){
+        data[POS_X] = x;
+        data[POS_Y] = y;
+        data[POS_Z] = z;
+    }
+    Vertice& operator+=(Vertice& other){
+        data[POS_X] += other.data[POS_X];
+        data[POS_Y] += other.data[POS_Y];
+        data[POS_Z] += other.data[POS_Z];
+        return *this;
+    } 
+};
+
+Vertice operator-(Vertice& one, Vertice& other){
+    return Vertice( 
+        one.data[POS_X] + other.data[POS_X], 
+        one.data[POS_Y] + other.data[POS_Y], 
+        one.data[POS_Z] + other.data[POS_Z]);
+}
+
+/** Triangle */
+struct Triangle{
+    Vertice vertices[3];
+    float A_size, B_size;
+    Triangle() 
+    {
+        vertices[0] = Vertice(0.0f, 0.0f, 0.0f);    // 90°C vertice
+        vertices[1] = Vertice(1.0f, 0.0f, 0.0f);    // Right vertice
+        vertices[2] = Vertice(0.0f, 1.0f, 0.0f);    // Top vertice
+    }
+    /* 90° triangle with origin vertice in {0,0,0}
+     * x_vert and y_vert are cordinates for vertices {x, 0, 0} and {0, y, 0} 
+     * respectively.
+     */
+    Triangle(float x_vert, float y_vert) 
+    {
+        vertices[0] = Vertice(0.0f, 0.0f, 0.0f);            // 90°C vertice
+        vertices[1] = Vertice(x_vert, 0.0f, 0.0f);    // Right vertice
+        vertices[2] = Vertice(0.0f, y_vert, 0.0f);    // Top vertice
+    }
+    /* Move triangle to the given position
+     * You are moving the first vertice to the position, while
+     * other vertices will move respecting the shape.
+     */
+    void move(Vertice position){
+        Vertice offset = vertices[0] - position;
+        vertices[0] = position,
+        vertices[1] += offset;
+        vertices[2] += offset;
     }
 };
 
-class Point{
-    float *arr_PCT; // positions(3) colors(3) texture(2)
+class Rectangle{
+    Triangle triangles[2];
 public:
-    Point()             : arr_PCT((float*)calloc(8, sizeof(float))) 
-    {}
-    Point(m_pos pos) : Point()
-    { 
-        set_pos(pos); 
-    }
-    Point(const Point &p) : Point() { memcpy(arr_PCT, p.arr_PCT, sizeof(float) * 8); }
-    ~Point() 
-    { 
-        free(arr_PCT);
-    }
-    // methods //
-    float* getArray()
-    {
-        return arr_PCT;
-    }
-    void set_pos(m_pos pos){
-        arr_PCT[0] = pos.x;
-        arr_PCT[1] = pos.y;
-        arr_PCT[2] = pos.z;
-    }
-    void set_color(m_pos color){
-        arr_PCT[3] = color.x;
-        arr_PCT[4] = color.y;
-        arr_PCT[5] = color.z;
-    }
-    void set_texture(m_pos texture){
-        arr_PCT[6] = texture.x;
-        arr_PCT[7] = texture.y;
-    }
-    m_pos get_pos(){
-        return m_pos(arr_PCT[0], arr_PCT[1], arr_PCT[2]);
-    }
-    void translate(m_pos pos){
-        set_pos(pos + get_pos());
+    Rectangle(){
+        triangles[0] = Triangle(1.0f, -1.0f);   //TOP Triangle
+        triangles[1] = Triangle(-1.0f, 1.0f);   //Bottom Triangle
+        
+        triangles[0].move(Vertice(-1.0f, ))
     }
 };
 
 const char *path = "res/asset/cube.dat";
 
-void gen_square_grid(float *destiny, unsigned int width, unsigned int height, float size){
-    const int col_offset = width+1;
-
-    for(unsigned h = 0; h <= height; h++){
-        for(unsigned w = 0; w <= width; w++){
-            int x_pos = 8 * (w + h*col_offset);
-            destiny[x_pos]      = w*size;        // X
-            destiny[x_pos + 1]  = h*size;        // Y
-        }
-    }
-}
-
-void gen_triangles(unsigned int *destiny, unsigned int width, unsigned int height){
-    for(int h = 0; h < height; h++){
-        for(int w = 0; w < width; w++){
-            int val = (w + h*width),
-                pos = 6 * val; 
-
-            destiny[pos]     = val;                     // A
-            destiny[pos + 1] = val + 1;                 // B
-            destiny[pos + 2] = val + width + 1;         // C
-
-            destiny[pos + 3] = val + width + 2;         // D
-            destiny[pos + 4] = val + width + 1;         // C
-            destiny[pos + 5] = val + 1;                 // B
-        }
-    }
-}
-
 int main(){
-    int H = 10, W = 10;
-    float p[8 * (W+1) * (H+1)];
-    unsigned indexes[6*W*H];
+    Vertice v;
+    Triangle t;
 
-    gen_square_grid(p, W, H, 0.2f);
-    gen_triangles(indexes, W, H);
-
-    for(int i = 0; i < H; i++){
-        printf("%d -> ", i);
-        for(int j = 0; j < 6*W; j++){
-            printf("%d ", indexes[i*W + j]);
+    for(int x = 0; x < 3; x++){
+        for(int i = 0; i < 3; i++){
+            std::cout << t.vertices[x].data[i] << " ";
         }
-        printf("\n");
-    }
-    LOG("\n . ");
-
-    for(unsigned h = 0; h <= H; h++){
-        for(unsigned w = 0; w <= W; w++){
-            unsigned x_pos = 8 * (h*(W+1) + w);
-            printf("{%.2f, %.2f} ", p[x_pos], p[x_pos + 1]);
-        }
-        std::cout << "\n\n";
+        LOG(std::endl);
     }
 
+    t.move(Vertice(-0.5f, 1.4f, 0.0f));
 
-    /*
-    Point a( m_pos(-0.5f, -0.5f) );
-    Point b = a , c = a;
-    b.translate( m_pos(0.0f, 1.0f) );
-    c.translate( m_pos(1.0f, 0.0f) );
-
-    LOG(&a << " : " << &b);
-    LOG("{" << a.get_pos().x << ", " << a.get_pos().y << ", " << a.get_pos().z  << "}");
-    LOG("{" << b.get_pos().x << ", " << b.get_pos().y << ", " << b.get_pos().z  << "}");
-    LOG("{" << c.get_pos().x << ", " << c.get_pos().y << ", " << c.get_pos().z  << "}");
-    */
-
+    LOG("Moved to -1, -1");
+    for(int x = 0; x < 3; x++){
+        for(int i = 0; i < 3; i++){
+            std::cout << t.vertices[x].data[i] << " ";
+        }
+        LOG(std::endl);
+    }
     return EXIT_SUCCESS;
 }
+
+/*
+* * * * *
+* * * * *
+* 2 * * *
+* 0 1 * *
+* * * * *
+
+*/

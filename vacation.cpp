@@ -121,12 +121,9 @@ int main(){
         
         model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-        //view = glm::translate(view, glm::vec3(0.0f, 0.0f, zoom));
-
-        camPos.x = sin(camX);
-        camPos.z = cos(zoom) + zoom;
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, zoom));
         
-        view = glm::lookAt(camPos, camTarget, camUp);
+        //view = glm::lookAt(camPos, camTarget, camUp);
 
 
         program.setMat4("model", glm::value_ptr(model));
@@ -149,34 +146,7 @@ int main(){
             x_off += size;
         }
 
-        
-        /*
-        glm::mat4 transform = glm::mat4(1.0f);
-        transform = glm::rotate(transform, float(glfwGetTime()) , glm::vec3(0.0, 0.0, 1.0));
-        transform = glm::translate(transform, glm::vec3(0.5, -0.5, 0.5));
-    
-        glUniformMatrix4fv(glGetUniformLocation(program.ID, "transMatrix"), 1, GL_FALSE, glm::value_ptr(transform));
-        float time = glfwGetTime();
-        float greenValue    = (sin(time/2.0f) / 2.0f) + 0.5f;
-        float redValue      = (cos(time/2.0f) / 2.0f) + 0.5f;
-        float blueValue      = (sin(time) / 2.0f) + 0.5f;
-        glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        for(unsigned int i = 0; i < 4; i++){
-            
-            glm::mat4 model = glm::mat4(1.0f);
-
-            model = glm::translate(model, cubePositions[i] );
-            model = glm::rotate(model, glm::radians(55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-            model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
-
-            program.setMat4("model", glm::value_ptr(model));
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-        */
     // events and swap buffers
-
         glfwSwapBuffers(window);
         glfwWaitEvents();
     }
@@ -193,18 +163,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height){
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    if(yoffset){
-        float value = 4*yoffset + zoom;
-        if(value < 1){
-            zoom = 1;
-            return;
-        }
-        if(value > 13){
-            zoom = 13;
-            return;
-        }
-        zoom = value;
-    }
+    zoom += yoffset;
 }
 
 
@@ -218,9 +177,5 @@ void processInput(GLFWwindow *window){
         else
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         wireframe = !wireframe;
-    }
-    if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
-        camX += 0.5f;
-        zoom += 0.5f;
     }
 }
