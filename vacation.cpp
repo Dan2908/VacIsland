@@ -10,6 +10,7 @@
 #include "3rd_party/glm/gtc/matrix_transform.hpp"
 #include "3rd_party/glm/gtc/type_ptr.hpp"
 #include "glFunc.h"
+#include "base/shapes.h"
 
 const int       WIDTH = 800, 
                 HEIGHT = 600;
@@ -104,17 +105,19 @@ int main(){
     VAO.enableAttribptr(0);
     EBO.bind();
     //Matrixes
+
+    Rectangle R;
     
 
     program.use();
     //Texture texture(texture_path); 
-
     while(!glfwWindowShouldClose(window)){
     // input
     // rendering
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
+#if 0
         processInput(window);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -131,13 +134,13 @@ int main(){
         program.setMat4("projection", glm::value_ptr(projection));
 
         int cols = 10, rows = 10;
-        float size = 0.5f;
-        float middle = cols * size / 2;
-
-        float x_off = -middle;
+        float size = 0.5f,
+              middle = cols * size / 2,
+              x_off = -middle,
+              y_off = -middle;
+              
         while(x_off < middle){
             program.setFloat("x_offset", x_off);
-            float y_off = -middle;
             while(y_off < middle){
                 program.setFloat("y_offset", y_off);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -154,7 +157,7 @@ int main(){
     glfwTerminate();
     return EXIT_SUCCESS;
 }
-
+#endif
 //  -------------------------------- DEFINITIONS --------------------------------   //
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height){

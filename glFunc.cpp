@@ -19,6 +19,8 @@ void BufferObject::bufferData(const void* data, long long size)
     glBufferData(type, size, data, GL_STATIC_DRAW);
     unbind();
 }
+int BufferObject::get_stride()  { return stride; }
+
 
 //  Vertex Buffer
 VertexBuffer::VertexBuffer(float *vertices, long long size, int stride) : BufferObject(GL_ARRAY_BUFFER, stride){
@@ -44,7 +46,7 @@ void VertexArrayObject::setVertexBuffer(VertexBuffer &VBO, int layout)
 {
     bind();
     VBO.bind();
-    glVertexAttribPointer(layout, 3, GL_FLOAT, GL_FALSE, VBO.get_stride<float>(), (void*)0);
+    glVertexAttribPointer(layout, 3, GL_FLOAT, GL_FALSE, VBO.get_stride() * sizeof(float), (void*)0);
     VBO.unbind();
     unbind();
 }
@@ -57,7 +59,7 @@ void VertexArrayObject::setVertexBuffers(VertexBuffer &VBO, int n, ...)
     int offset = 0, size;
     for(int layout = 0; layout < n; layout++){
         size = va_arg(vl, int);
-        glVertexAttribPointer(layout, size, GL_FLOAT, GL_FALSE, VBO.get_stride<float>(), (void*)(offset * sizeof(float)));
+        glVertexAttribPointer(layout, size, GL_FLOAT, GL_FALSE, VBO.get_stride() * sizeof(float), (void*)(offset * sizeof(float)));
         offset += size;
     }
     va_end(vl);

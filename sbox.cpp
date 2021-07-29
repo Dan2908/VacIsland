@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "base/shapes.h"
+
 #define LOG(...) std::cerr << __VA_ARGS__ << std::endl
 
 enum DATA_PTR : int {
@@ -72,7 +74,7 @@ struct Triangle{
         vertices[2] += offset;
     }
 };
-
+/*
 class Rectangle{
     Triangle triangles[2];
 public:
@@ -80,16 +82,19 @@ public:
         triangles[0] = Triangle(1.0f, -1.0f);   //TOP Triangle
         triangles[1] = Triangle(-1.0f, 1.0f);   //Bottom Triangle
         
-        triangles[0].move(Vertice(-1.0f, ))
+        triangles[0].move(Vertice(-1.0f, 1.0f, 0.0f));
+        triangles[1].move(Vertice(1.0f, -1.0f, 0.0f));
     }
 };
-
+*/
 const char *path = "res/asset/cube.dat";
 
 int main(){
-    Vertice v;
-    Triangle t;
+    Rectangle R;
+    ElementBuffer eb = R.element_buffer(false);
 
+    LOG(eb.get_stride());
+    
     for(int x = 0; x < 3; x++){
         for(int i = 0; i < 3; i++){
             std::cout << t.vertices[x].data[i] << " ";
@@ -97,15 +102,6 @@ int main(){
         LOG(std::endl);
     }
 
-    t.move(Vertice(-0.5f, 1.4f, 0.0f));
-
-    LOG("Moved to -1, -1");
-    for(int x = 0; x < 3; x++){
-        for(int i = 0; i < 3; i++){
-            std::cout << t.vertices[x].data[i] << " ";
-        }
-        LOG(std::endl);
-    }
     return EXIT_SUCCESS;
 }
 

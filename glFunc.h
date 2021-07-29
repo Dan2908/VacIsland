@@ -1,6 +1,9 @@
 #ifndef H_VBO
 #define H_VBO
 
+#define VBO_STRIDE 8
+
+template<typename T>
 
 /** Base Buffer Object class*/
 class BufferObject{
@@ -10,8 +13,7 @@ public:
     unsigned int ID;
     BufferObject(unsigned int type, int stride);
     ~BufferObject();
-    template<typename T>
-    int get_stride() { return stride * sizeof(T); }
+    int get_stride();
     void bind();
     void unbind();
 protected:
