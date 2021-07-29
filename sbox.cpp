@@ -1,9 +1,10 @@
 #include <iostream>
 #include <fstream>
 
-#include "base/shapes.h"
 
 #define LOG(...) std::cerr << __VA_ARGS__ << std::endl
+
+#include "utility.h"
 
 enum DATA_PTR : int {
     NONE = -1,
@@ -76,7 +77,8 @@ struct Triangle{
 };
 /*
 class Rectangle{
-    Triangle triangles[2];
+    Triangle triangles[2]; 
+    
 public:
     Rectangle(){
         triangles[0] = Triangle(1.0f, -1.0f);   //TOP Triangle
@@ -89,18 +91,21 @@ public:
 */
 const char *path = "res/asset/cube.dat";
 
-int main(){
-    Rectangle R;
-    ElementBuffer eb = R.element_buffer(false);
 
-    LOG(eb.get_stride());
-    
-    for(int x = 0; x < 3; x++){
-        for(int i = 0; i < 3; i++){
-            std::cout << t.vertices[x].data[i] << " ";
-        }
-        LOG(std::endl);
+
+int main(){
+    float *from = util::read_data<float>(path);
+    float to[20];
+
+    unsigned long long size = sizeof(float);
+
+    util::copy_duff_device(from, to, 20);
+
+    for(int i = 0; i < 20; i ++){
+        LOG(to[i]);
     }
+
+
 
     return EXIT_SUCCESS;
 }

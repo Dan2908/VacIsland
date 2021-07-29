@@ -64,7 +64,24 @@ namespace util{
         safe_fclose(f); 
         return res;
     }
-        
+    
+    template<typename T>
+    T* copy_duff_device(T *from, T *to, int count){
+        int n = (count + 7) / 8;
+        switch(count % 8){
+            case 0: do{
+                        *to++ = *from++;
+                case 1: *to++ = *from++;
+                case 2: *to++ = *from++;
+                case 3: *to++ = *from++;
+                case 4: *to++ = *from++;
+                case 5: *to++ = *from++;
+                case 6: *to++ = *from++;
+                case 7: *to++ = *from++;
+            }while(--n);
+        }
+        return to;
+    }    
 }
 
 #endif

@@ -148,6 +148,7 @@ int main(){
             }
             x_off += size;
         }
+#endif
 
     // events and swap buffers
         glfwSwapBuffers(window);
@@ -157,7 +158,6 @@ int main(){
     glfwTerminate();
     return EXIT_SUCCESS;
 }
-#endif
 //  -------------------------------- DEFINITIONS --------------------------------   //
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height){

@@ -2,8 +2,14 @@
 #define H_VBO
 
 #define VBO_STRIDE 8
+#define STB_IMAGE_IMPLEMENTATION
 
-template<typename T>
+#include "3rd_party/stb_image.h"
+#include "utility.h"
+#include <GL/glew.h>
+#include <stdarg.h>
+
+
 
 /** Base Buffer Object class*/
 class BufferObject{
