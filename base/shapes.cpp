@@ -1,9 +1,26 @@
 #include "shapes.h"
 
-Shape::Shape(Point p) : origin(p) {}
-Shape::Shape(int x, int y) : origin(x, y) {}
-float *Shape::get_normals(float dest[2]){
-    memccpy(dest, &origin, 1, 2 *sizeof(float));
+float *get_normal(float *dest, Point p){
+    *dest++ = p.x / PROPORTION;
+    *dest++ = p.y / PROPORTION;
+    *dest++ = p.z / PROPORTION;
+    return dest;
+}
+
+float *get_normals(float *dest, int n ...){
+    va_list vl;
+    va_start(vl, n);
+    for(int i = 0; i < n; i++){
+        get_normals(dest, va_arg(vl, int));
+    }
+    va_end(vl);
+    return dest;
+}
+
+Shape::Shape() : n_vertices(0), vertex_data(nullptr) {}
+float *Shape::get_vertex_array(VertexDataf dest)
+{
+    util::copy_duff_device(vertex_data, dest, n_vertices, static_cast<float>());
     return dest;
 }
 
@@ -14,20 +31,10 @@ Triangle::Triangle(Point v1, Point v2, Point origin) : Shape(origin), v1(v1), v2
 Triangle::Triangle() : Triangle({DEFAULT_SIZE,0}, {0,DEFAULT_SIZE}) {}
 
 Rectangle::Rectangle() : v1({0,DEFAULT_SIZE}), v2({DEFAULT_SIZE,0}), v3({DEFAULT_SIZE,DEFAULT_SIZE}) {}
-float *Rectangle::vertex_buffer_array(float *destArray){
-    float res[VBO_STRIDE];
-    util::copy_duff_device(this.origin, res, 2)
-    util::copy_duff_device({1, 2}, destArray, VBO_STRIDE);
-    return destArray;
+float *Rectangle::vertex_buffer(float *dest){
+    get_normals(dest, 4, origin, v1, v2, v3);
+    return dest;
 }
-VertexBuffer Rectangle::vertex_buffer() 
-{
-    float vertices[VBO_STRIDE * 4] = proportional({v0, v1, v2, v3});
-}
-ElementBuffer Rectangle::element_buffer(bool inverse)
-{
-    int indices[6] = (inverse ? {1, 2, 0, 1, 2, 3} : {0, 3, 1, 0, 3, 2});
-    return ElementBuffer(indices, sizeof(indices), 3);
-}
+
 
 

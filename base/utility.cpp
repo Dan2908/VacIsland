@@ -2,7 +2,6 @@
 #define LOG(...) std::cerr << __VA_ARGS__ << std::endl
 #endif
 
-#include <iostream>
 #include "utility.h"
 
 char* util::read_file(const char *fileName){

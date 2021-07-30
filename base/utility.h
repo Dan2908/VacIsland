@@ -1,6 +1,9 @@
 #ifndef H_UTILITY
 #define H_UTILITY
 
+#include <iostream>
+#include <wchar.h>
+
 namespace util{
 
     /**
@@ -78,6 +81,24 @@ namespace util{
                 case 5: *to++ = *from++;
                 case 6: *to++ = *from++;
                 case 7: *to++ = *from++;
+            }while(--n);
+        }
+        return to;
+    }
+
+    template<typename T, typename U>
+    T* copy_duff_device(U *from, T *to, int count, T conversion(U)){
+        int n = (count + 7) / 8;
+        switch(count % 8){
+            case 0: do{
+                        *to++ = conversion(*from++);
+                case 1: *to++ = conversion(*from++);
+                case 2: *to++ = conversion(*from++);
+                case 3: *to++ = conversion(*from++);
+                case 4: *to++ = conversion(*from++);
+                case 5: *to++ = conversion(*from++);
+                case 6: *to++ = conversion(*from++);
+                case 7: *to++ = conversion(*from++);
             }while(--n);
         }
         return to;

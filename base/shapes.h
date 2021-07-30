@@ -2,26 +2,35 @@
 #define SHAPES_H
 
 #include <cstdlib>
+#include <stdarg.h>
 #include "utility.h"
 #include "geometry.h"
-#include "glFunc.h"
 
-static unsigned int PROPORTION = 1000;
-static unsigned int DEFAULT_SIZE = 1000;
+static const unsigned int   PROPORTION = 1000,
+                            DEFAULT_SIZE = 1000,
+                            s_vertices = 3,
+                            s_color = 3,
+                            s_texture = 2,
+                            s_stride = s_vertices + s_color + s_texture;
 
-template<typename T, typename U>
-T normalize(U x){ return (T)(x/PROPORTION); }
+typedef int     VertexDatai[s_stride];
+typedef float   VertexDataf[s_stride];
+ 
+
+float *get_normals(float *dest, Point p);
+float *get_normals(float *dest, int n ...);
 
 class Shape{
-    Point origin;
+protected:
+    int n_vertices;
+    VertexDatai *vertex_data;
 public:
-    Shape(Point p);
-    Shape(int x = 0, int y = 0);
-    float *get_normals(float *dest);
+    Shape();
+    float *get_vertex_array(VertexDataf dest);
 };
 
 class Rect : Shape{
-    Point v1;
+    VertexDatai v1;
 public:
     Rect(Point v1);
     Rect(Point v0, Point v1);
@@ -38,9 +47,8 @@ class Rectangle : Shape{
     Point v1, v2, v3;
 public:
     Rectangle();
-    float *vertex_buffer_array(float *destArray);
-    VertexBuffer vertex_buffer();
-    ElementBuffer element_buffer(bool inverse);
+    float *vertex_buffer(float *dest);
+    int *element_buffer();
 };
 
 #endif
