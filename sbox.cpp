@@ -4,7 +4,8 @@
 
 #define LOG(...) std::cerr << __VA_ARGS__ << std::endl
 
-#include "utility.h"
+#include "base/utility.h"
+#include "base/shapes.h"
 
 enum DATA_PTR : int {
     NONE = -1,
@@ -97,9 +98,12 @@ int main(){
     float *from = util::read_data<float>(path);
     float to[20];
 
+    util::copy_duff_device(from, to, 20);
+    Shape sh(1, 1);
+    sh.get_normals(to);
+
     unsigned long long size = sizeof(float);
 
-    util::copy_duff_device(from, to, 20);
 
     for(int i = 0; i < 20; i ++){
         LOG(to[i]);

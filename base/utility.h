@@ -81,7 +81,8 @@ namespace util{
             }while(--n);
         }
         return to;
-    }    
+    }
+
 }
 
 #endif
