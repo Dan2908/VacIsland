@@ -1,7 +1,7 @@
 #include <iostream>
 
+#define STB_IMAGE_IMPLEMENTATION
 #include "glFunc.h"
-
 
 BufferObject::BufferObject(unsigned int type, int stride) : type(type), stride(stride) 
                                                      { glGenBuffers(1, &ID); }

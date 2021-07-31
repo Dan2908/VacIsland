@@ -24,13 +24,19 @@ public:
     void set_pos(Point pos, int dest_vertex);
     void set_color(Point color, int dest_vertex);
     void set_texture(Point tex_coord, int dest_vertex);
+    size_t vertex_buffer_size();
+    long long element_buffer_size();
 };
 
-class Rectangle : Shape{
+class Rectangle : public Shape{
+    float *vertex_buffer(float *dest);
+    unsigned int *element_buffer(bool reverse_order, unsigned int *dest);
 public:
     Rectangle();
-    float *vertex_buffer(float *dest);
-    int *element_buffer();
+    Rectangle(int size_square);
+    Rectangle(int w, int h);
+    Rectangle(int w, int h, Point offset);
+    void get_buffer_data(float *vertex_array, unsigned int *element_array, bool reverse_order);
 };
 
 #endif

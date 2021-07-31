@@ -119,7 +119,7 @@ namespace util{
                 case 7: *arr++ = F(*arr);
             }while(--n);
         }
-        return to;
+        return arr;
     }    
 
 }

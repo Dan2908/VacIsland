@@ -12,12 +12,12 @@ char* util::read_file(const char *fileName){
     f = safe_fopen(fileName, "rb"); // Open file
     if(f == NULL) { return NULL; }  // Check error
 
-    lSize = get_file_size(f);                 //Get file size
+    lSize = get_file_size(f) + 1;                 //Get file size
     str = (char*)malloc(sizeof(char)*lSize);  // Allocate string
     size_t result = fread(str, lSize, 1, f);  // Read file
     
     if(result != lSize && !feof(f))         // Check errors
-        LOG("File read failure!");          //
+        LOG("File read failure!\nsize: " << lSize);          //
 
     str[lSize - 1] = '\0';      // Close string
     safe_fclose(f);

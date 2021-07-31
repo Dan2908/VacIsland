@@ -18,7 +18,7 @@ const char  *   vShader_path = "shader/vertex.glsl",
             *   fShader_path = "shader/fragment.glsl",
             *   texture_path = "res/img/wall.jpg";
 static bool     wireframe    = false;
-static float    zoom         = 1.0f,
+static float    zoom         = -3.0f,
                 camX         = 0.0f;
 glm::vec3       camPos(0.0f, 0.0f, zoom), 
                 camTarget(0.0f, 0.0f, 0.0f),
@@ -67,47 +67,28 @@ int main(){
     glViewport(0,0,WIDTH, HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetScrollCallback(window, scroll_callback);
-
-// Dibujar
-    float triangle[] = {
-        //#positions            #Colors
-         0.0f,  0.5f, 0.0f,     1.0f, 0.0f, 0.0f, // top
-        -0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f, //bottom left
-         0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f
-    };
-    float vertices[] = {
-        -0.5f,  0.5f, 0.0f, // top left
-        -0.5f, -0.5f, 0.0f, // bottom left
-         0.5f,  0.5f, 0.0f, // top right
-         0.5f, -0.5f, 0.0f  // bottom right
-    };
-    unsigned int indices[]{
-        0, 1, 2,    // triangle 1
-        2, 1, 3     // triangle 2
-    };
-
-    glm::vec3 cubePositions[] = {
-        glm::vec3( 0.5f,  0.5f, 0.0f), 
-        glm::vec3( 0.5f, -0.5f, 0.0f),
-        glm::vec3(-0.5f,  0.5f, 0.0f),  
-        glm::vec3(-0.5f, -0.5f, 0.0f) 
-    };
-
+//
+//  ###  END WINDOW INIT STATEMENTS
+//
     ShaderProgram program(vShader_path, fShader_path);
     VertexArrayObject VAO;
-    VertexBuffer VBO(vertices, sizeof(vertices), 3);
-    VertexBuffer Triangle(triangle, sizeof(triangle), 6);
-    VertexBuffer Cube("res/asset/cube.dat", 180 * sizeof(float), 5);
-    ElementBuffer EBO(indices, sizeof(indices), 3);
+
+    //Rectangle
+    Rectangle R(800);
+    float r_vert[R.vertex_buffer_size()];
+    unsigned int r_elts[R.element_buffer_size()];
+    
+    R.get_buffer_data(r_vert, r_elts, false);       // get data
+
+    VertexBuffer vb_rectangle(r_vert, R.vertex_buffer_size(), s_stride);
+    ElementBuffer eb_rectangle(r_elts, R.element_buffer_size(), 3);
 
     //VAO.setVertexBuffer(VBO, 0);
-    VAO.setVertexBuffers(VBO, 1, 3);
+    VAO.setVertexBuffers(vb_rectangle, 3, 3, 3, 2);
     VAO.enableAttribptr(0);
-    EBO.bind();
-    //Matrixes
-
-    Rectangle R;
-    
+    VAO.enableAttribptr(1);
+    VAO.enableAttribptr(2);
+    eb_rectangle.bind();
 
     program.use();
     //Texture texture(texture_path); 
@@ -117,7 +98,6 @@ int main(){
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
-#if 0
         processInput(window);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -128,27 +108,12 @@ int main(){
         
         //view = glm::lookAt(camPos, camTarget, camUp);
 
-
         program.setMat4("model", glm::value_ptr(model));
         program.setMat4("view", glm::value_ptr(view));
         program.setMat4("projection", glm::value_ptr(projection));
-
-        int cols = 10, rows = 10;
-        float size = 0.5f,
-              middle = cols * size / 2,
-              x_off = -middle,
-              y_off = -middle;
-              
-        while(x_off < middle){
-            program.setFloat("x_offset", x_off);
-            while(y_off < middle){
-                program.setFloat("y_offset", y_off);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-                y_off += size;
-            }
-            x_off += size;
-        }
-#endif
+        program.setFloat("x_offset", 0);
+        program.setFloat("y_offset", 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     // events and swap buffers
         glfwSwapBuffers(window);
@@ -168,7 +133,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     zoom += yoffset;
 }
-
 
 void processInput(GLFWwindow *window){
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){

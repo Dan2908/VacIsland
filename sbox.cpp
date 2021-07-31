@@ -10,7 +10,9 @@ int main(){
     Rectangle R;
 
     float vertices[4 * s_stride];
-    R.vertex_buffer(vertices);
+
+    LOG(R.vertex_buffer_size());
+
 
     for(int i = 0; i < 4; i++){
         for(int j = 0; j < s_stride; j++){

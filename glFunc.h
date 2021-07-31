@@ -2,12 +2,12 @@
 #define H_VBO
 
 #define VBO_STRIDE 8
-#define STB_IMAGE_IMPLEMENTATION
 
 #include "3rd_party/stb_image.h"
-#include "utility.h"
+#include "base/utility.h"
 #include <GL/glew.h>
 #include <stdarg.h>
+
 
 
 
