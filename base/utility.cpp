@@ -9,29 +9,18 @@ char* util::read_file(const char *fileName){
     long lSize;
     char* str;
 
-    // Open file
-    f = fopen(fileName, "rb");
-    if(f == NULL){
-        LOG("Filed to open file: '" << fileName << "'.");
-        return NULL;
-    }
-    //Get file size
-    fseek(f, 0, SEEK_END);
-    lSize = ftell(f) + 1;
-    rewind(f);
-    // Allocate string
-    str = (char*)malloc(sizeof(char)*lSize);
-    if(str == NULL){
-        LOG("Memory allocation failure");
-        return NULL;
-    }
-    // Read file
-    size_t result = fread(str, lSize, 1, f);
-    if(result != lSize && !feof(f))
-        LOG("File read failure!");
-    str[lSize - 1] = '\0';
-    // Terminate
-    fclose(f);
+    f = safe_fopen(fileName, "rb"); // Open file
+    if(f == NULL) { return NULL; }  // Check error
+
+    lSize = get_file_size(f);                 //Get file size
+    str = (char*)malloc(sizeof(char)*lSize);  // Allocate string
+    size_t result = fread(str, lSize, 1, f);  // Read file
+    
+    if(result != lSize && !feof(f))         // Check errors
+        LOG("File read failure!");          //
+
+    str[lSize - 1] = '\0';      // Close string
+    safe_fclose(f);
     return str;
 }
 
@@ -45,7 +34,7 @@ const size_t util::get_file_size(FILE *stream) {
 FILE *util::safe_fopen(const char* file_path, const char* mode){
     FILE *stream = fopen(file_path, mode);
     if(stream == NULL)
-        perror("File Error.");
+        perror("Error opening file.");
     return stream;
 }
 
