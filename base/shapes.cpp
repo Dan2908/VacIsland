@@ -1,38 +1,38 @@
 #include "shapes.h"
 
-float *get_normal(float *dest, Point p){
-    *dest++ = p.x / PROPORTION;
-    *dest++ = p.y / PROPORTION;
-    *dest++ = p.z / PROPORTION;
-    return dest;
+float normalize(float n){
+    return n/s_ratio;
 }
 
-float *get_normals(float *dest, int n ...){
-    va_list vl;
-    va_start(vl, n);
-    for(int i = 0; i < n; i++){
-        get_normals(dest, va_arg(vl, int));
-    }
-    va_end(vl);
-    return dest;
+Shape::Shape(const int n_vertices) : n_vertices(n_vertices){
+    vertex_data = (int*)calloc(n_vertices, sizeof(VertexDatai));
+}
+void Shape::set_pos(Point pos, int dest_vertex){
+    int offset = dest_vertex*s_stride;
+    memcpy((vertex_data + offset), pos.coords, size_i_3D);
 }
 
-Shape::Shape() : n_vertices(0), vertex_data(nullptr) {}
-float *Shape::get_vertex_array(VertexDataf dest)
+void Shape::set_color(Point color, int dest_vertex){
+    int offset = dest_vertex*s_stride + s_vertices;
+    memcpy((vertex_data + offset), color.coords, size_i_3D);
+}
+void Shape::set_texture(Point tex_coord, int dest_vertex){
+    int offset = dest_vertex*s_stride + s_vertices + s_color;
+    memcpy((vertex_data + offset), tex_coord.coords, size_i_2D);
+}
+
+
+Rectangle::Rectangle() : Shape(4) 
 {
-    util::copy_duff_device(vertex_data, dest, n_vertices, static_cast<float>());
-    return dest;
+    set_pos(Point(0, 0, 0), 0);
+    set_pos(Point(s_ratio, 0, 0), 1);
+    set_pos(Point(0, s_ratio, 0), 2);
+    set_pos(Point(s_ratio, s_ratio, 0), 3);
 }
 
-Rect::Rect(Point v1) : v1(v1) {}
-Rect::Rect(Point v0, Point v1) : Shape(v0), v1(v1) {}
-
-Triangle::Triangle(Point v1, Point v2, Point origin) : Shape(origin), v1(v1), v2(v2) {}
-Triangle::Triangle() : Triangle({DEFAULT_SIZE,0}, {0,DEFAULT_SIZE}) {}
-
-Rectangle::Rectangle() : v1({0,DEFAULT_SIZE}), v2({DEFAULT_SIZE,0}), v3({DEFAULT_SIZE,DEFAULT_SIZE}) {}
 float *Rectangle::vertex_buffer(float *dest){
-    get_normals(dest, 4, origin, v1, v2, v3);
+    util::copy_duff_device(vertex_data, dest, n_vertices * s_stride);
+    util::operate_duff_device(dest, n_vertices * s_stride, normalize);
     return dest;
 }
 

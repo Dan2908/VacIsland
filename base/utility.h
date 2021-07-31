@@ -67,7 +67,14 @@ namespace util{
         safe_fclose(f); 
         return res;
     }
-    
+    /**
+     * Duff's device for fast copy of arrays. Copies contents of the first array to the second. 
+     * If arrays differs in type, this function will try to cast the types if possible.
+     * @return Pointer to destination array.
+     * @param from Pointer to array to be copied.
+     * @param to Pointer to an array to store the data.
+     * @param count Number of elements to be copied.
+    */
     template<typename T>
     T* copy_duff_device(T *from, T *to, int count){
         int n = (count + 7) / 8;
@@ -85,24 +92,48 @@ namespace util{
         }
         return to;
     }
-
+    /**
+     * Duff's device for fast copy of arrays. Copies contents of the array from to the array to. 
+     * If arrays differs in type, this function will try to cast the types if possible.
+     * @return Pointer to destination array.
+     * @param from Pointer to array to be copied.
+     * @param to Pointer to array to store the data.
+     * @param count Number of elements to be copied.
+    */
     template<typename T, typename U>
-    T* copy_duff_device(U *from, T *to, int count, T conversion(U)){
+    T* copy_duff_device(U *from, T *to, int count){
         int n = (count + 7) / 8;
         switch(count % 8){
             case 0: do{
-                        *to++ = conversion(*from++);
-                case 1: *to++ = conversion(*from++);
-                case 2: *to++ = conversion(*from++);
-                case 3: *to++ = conversion(*from++);
-                case 4: *to++ = conversion(*from++);
-                case 5: *to++ = conversion(*from++);
-                case 6: *to++ = conversion(*from++);
-                case 7: *to++ = conversion(*from++);
+                        *to++ = T(*from++);
+                case 1: *to++ = T(*from++);
+                case 2: *to++ = T(*from++);
+                case 3: *to++ = T(*from++);
+                case 4: *to++ = T(*from++);
+                case 5: *to++ = T(*from++);
+                case 6: *to++ = T(*from++);
+                case 7: *to++ = T(*from++);
             }while(--n);
         }
         return to;
     }
+    template<typename T>
+    T* operate_duff_device(T *to, int count, T (F)(T)){
+        int n = (count + 7) / 8;
+        switch(count % 8){
+            case 0: do{
+                        *to++ = F(*to);
+                case 1: *to++ = F(*to);
+                case 2: *to++ = F(*to);
+                case 3: *to++ = F(*to);
+                case 4: *to++ = F(*to);
+                case 5: *to++ = F(*to);
+                case 6: *to++ = F(*to);
+                case 7: *to++ = F(*to);
+            }while(--n);
+        }
+        return to;
+    }    
 
 }
 

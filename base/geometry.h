@@ -1,11 +1,18 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
+typedef int arr_p[3];
+
+const short size_i_2D = 2 * sizeof(int); // size of 2 int
+const short size_i_3D = 3 * sizeof(int); // size of 2 int
+
+enum cardinals{
+    X, Y, Z
+};
+
 struct Point{ 
-    int x;
-    int y;
-    int z; 
-    Point(int x = 0, int y = 0, int z = 0) : x(x), y(y), z(z) {}
+    arr_p coords;
+    Point(int x = 0, int y = 0, int z = 0) : coords {x, y, z} {}
 };
 
 struct Dimension
