@@ -29,7 +29,7 @@ long long Shape::element_buffer_size(){
 }
 
 Rectangle::Rectangle() : Rectangle(s_ratio) {}
-Rectangle::Rectangle(int size_square) : Rectangle(size_square, size_square) {}
+Rectangle::Rectangle(int square_size) : Rectangle(square_size, square_size) {}
 Rectangle::Rectangle(int w, int h) : Shape(4) 
 {
     set_pos(Point(0, 0, 0), 0);
@@ -40,8 +40,8 @@ Rectangle::Rectangle(int w, int h) : Shape(4)
 Rectangle::Rectangle(int w, int h, Point offset) : Shape(4) 
 {
     set_pos(Point(    offset.get_x(),       offset.get_y(), offset.get_z()), 0);
-    set_pos(Point(w + offset.get_x(),       offset.get_y(), offset.get_z()), 1);
-    set_pos(Point(    offset.get_x(),   h + offset.get_y(), offset.get_z()), 2);
+    set_pos(Point(    offset.get_x(),   h + offset.get_y(), offset.get_z()), 1);
+    set_pos(Point(w + offset.get_x(),       offset.get_y(), offset.get_z()), 2);
     set_pos(Point(w + offset.get_x(),   h + offset.get_y(), offset.get_z()), 3);
 }
 
@@ -55,7 +55,7 @@ unsigned int *Rectangle::element_buffer(bool reverse_order, unsigned int *dest){
     if(!reverse_order){
         dest[0] = 0; dest[3] = 0;   //    /|  ; |''/
         dest[1] = 3; dest[4] = 3;   //   / |  ; | /
-        dest[2] = 1; dest[5] = 2;   //  /__|  ; |/
+        dest[2] = 2; dest[5] = 1;   //  /__|  ; |/
     }
     else{
         dest[0] = 1; dest[3] = 1;   //  |\    ; \''|

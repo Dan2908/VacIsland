@@ -28,15 +28,26 @@ public:
     long long element_buffer_size();
 };
 
-class Rectangle : public Shape{
+class Rectangle : virtual public Shape{
     float *vertex_buffer(float *dest);
     unsigned int *element_buffer(bool reverse_order, unsigned int *dest);
 public:
     Rectangle();
-    Rectangle(int size_square);
+    Rectangle(int square_size);
     Rectangle(int w, int h);
     Rectangle(int w, int h, Point offset);
     void get_buffer_data(float *vertex_array, unsigned int *element_array, bool reverse_order);
 };
 
+class Surface : public Shape {
+public:
+    Surface();
+    Surface(int sqares_w, int sqares_h, int square_size);
+};
+
+Surface::Surface() : Shape(3) {}
+Surface::Surface(int sqares_w, int sqares_h, int square_size) : Shape( (sqares_w + 1) * (sqares_h + 1))
+{
+
+}
 #endif
