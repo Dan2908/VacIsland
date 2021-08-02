@@ -7,20 +7,16 @@
 typedef float position[3];
 
 int main(){
-    Rectangle R;
+    int W = 5, H = 5;
+    Surface S(W, H, 200);
+    int *vdata = S.get_vertex_data();
 
-    float vertices[4 * s_stride];
-
-    LOG(R.vertex_buffer_size());
-
-
-    for(int i = 0; i < 4; i++){
-        for(int j = 0; j < s_stride; j++){
-            std::cout << vertices[i*s_stride +j]<< " ";
+    for(int i = W; i >= 0; i--){
+        for(int j = 0; j <= H; j++){
+            printf("(%i, %i)\t", vdata[i*s_stride + j*(H+1)*s_stride], vdata[i*s_stride + j*(H+1)*s_stride + 1]);
         }
         std::cout << std::endl;
     }
-
 
     return EXIT_SUCCESS;
 }

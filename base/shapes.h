@@ -17,6 +17,7 @@ float normalize(float n);
 
 class Shape{
 protected:
+    float *vertex_buffer(float *dest);
     int  n_vertices,
         *vertex_data;
 public:
@@ -29,7 +30,6 @@ public:
 };
 
 class Rectangle : virtual public Shape{
-    float *vertex_buffer(float *dest);
     unsigned int *element_buffer(bool reverse_order, unsigned int *dest);
 public:
     Rectangle();
@@ -40,14 +40,21 @@ public:
 };
 
 class Surface : public Shape {
+    unsigned int *element_buffer(int w, int h, unsigned int *dest);
 public:
     Surface();
-    Surface(int sqares_w, int sqares_h, int square_size);
+    Surface(int squares_w, int squares_h, int square_size);
+    int *get_vertex_data() { return vertex_data; }
 };
 
-Surface::Surface() : Shape(3) {}
-Surface::Surface(int sqares_w, int sqares_h, int square_size) : Shape( (sqares_w + 1) * (sqares_h + 1))
-{
-
+unsigned int *Surface::element_buffer(int w, int h, unsigned int *dest){
+    *dest++ = 0;
+    *dest++ = 1;
+    *dest++ = 4;
+    *dest++ = 1;
+    *dest++ = 4;
+    *dest++ = 5;
 }
+
+
 #endif

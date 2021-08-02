@@ -27,30 +27,27 @@ long long Shape::element_buffer_size(){
                             (3 * (n_vertices - 2) * sizeof(unsigned int)) : // triangles (3) each vertice greater than (2) * size of int
                             (n_vertices * sizeof(unsigned int));            // one element per vertice;
 }
+float *Shape::vertex_buffer(float *dest){
+    util::copy_duff_device(vertex_data, dest, n_vertices * s_stride);
+    util::operate_duff_device(dest, n_vertices * s_stride, normalize);
+    return dest;
+}
 
 Rectangle::Rectangle() : Rectangle(s_ratio) {}
 Rectangle::Rectangle(int square_size) : Rectangle(square_size, square_size) {}
 Rectangle::Rectangle(int w, int h) : Shape(4) 
 {
     set_pos(Point(0, 0, 0), 0);
-    set_pos(Point(w, 0, 0), 1);
     set_pos(Point(0, h, 0), 2);
+    set_pos(Point(w, 0, 0), 1);
     set_pos(Point(w, h, 0), 3);
 }
-Rectangle::Rectangle(int w, int h, Point offset) : Shape(4) 
-{
+Rectangle::Rectangle(int w, int h, Point offset) : Shape(4) {
     set_pos(Point(    offset.get_x(),       offset.get_y(), offset.get_z()), 0);
     set_pos(Point(    offset.get_x(),   h + offset.get_y(), offset.get_z()), 1);
     set_pos(Point(w + offset.get_x(),       offset.get_y(), offset.get_z()), 2);
     set_pos(Point(w + offset.get_x(),   h + offset.get_y(), offset.get_z()), 3);
 }
-
-float *Rectangle::vertex_buffer(float *dest){
-    util::copy_duff_device(vertex_data, dest, n_vertices * s_stride);
-    util::operate_duff_device(dest, n_vertices * s_stride, normalize);
-    return dest;
-}
-
 unsigned int *Rectangle::element_buffer(bool reverse_order, unsigned int *dest){
     if(!reverse_order){
         dest[0] = 0; dest[3] = 0;   //    /|  ; |''/
@@ -64,10 +61,24 @@ unsigned int *Rectangle::element_buffer(bool reverse_order, unsigned int *dest){
     }
     return dest;
 }
-
 void Rectangle::get_buffer_data(float *vertex_array, unsigned int *element_array, bool reverse_order){
     vertex_buffer(vertex_array);
     element_buffer(reverse_order, element_array);
+}
+
+Surface::Surface() : Shape(3) {}
+Surface::Surface(int squares_w, int squares_h, int square_size) : Shape( (squares_w + 1) * (squares_h + 1)){
+    int *ptr     = vertex_data,
+        W        = squares_w * square_size,
+        H        = squares_h * square_size;
+
+    for(int x = 0; x <= W; x += square_size){
+        for(int y = 0; y <= H; y += square_size){
+            *ptr++ = x;
+            *ptr++ = y;
+            ptr += s_stride - 2;    //skip to the next vertex
+        }
+    }
 }
 
 
