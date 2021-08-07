@@ -4,16 +4,14 @@ float normalize(float n){
     return n/s_ratio;
 }
 
-Shape::Shape(const int n_vertices) : n_vertices(n_vertices){
-    vertex_data = (int*)calloc(n_vertices, sizeof(VertexDatai));
+Shape::Shape(const int n_vertices) : m_vertexCount(n_vertices){
+    m_vertices = (unsigned int*)calloc(n_vertices, sizeof(VertexDatai));
 }
-void Shape::set_pos(Point pos, int dest_vertex){
-    int offset = dest_vertex*s_stride;
-    memcpy((vertex_data + offset), pos.coords, size_i_3D);
+void Shape::set_pos(Point data, int vertex){
+    shapes::set_vdata(m_vertices, 3, vertex, data);
 }
-void Shape::set_color(Point color, int dest_vertex){
-    int offset = dest_vertex*s_stride + s_vertices;
-    memcpy((vertex_data + offset), color.coords, size_i_3D);
+void Shape::set_color(Point data, int dest_vertex){
+    shapes::set_vdata(m_vertices, 3, vertex, data);
 }
 void Shape::set_texture(Point tex_coord, int dest_vertex){
     int offset = dest_vertex*s_stride + s_vertices + s_color;

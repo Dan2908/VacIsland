@@ -14,8 +14,8 @@ struct Point{
     arr_p coords;
     Point(int x = 0, int y = 0, int z = 0) : coords {x, y, z} {}
     int get_x() { return coords[X]; }
-    int get_y() { return coords[Y]; };
-    int get_z() { return coords[Z]; };
+    int get_y() { return coords[Y]; }
+    int get_z() { return coords[Z]; }
 };
 
 struct Dimension
