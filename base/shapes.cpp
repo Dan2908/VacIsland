@@ -1,21 +1,17 @@
 #include "shapes.h"
 
+                    /// SHAPE ///
 
-
-Shape::Shape(const int n_vertices) : m_vertexCount(n_vertices)
-{
-    m_vertices = (unsigned *)calloc(n_vertices, sizeof(type_vertex_data_i));
-}
+Shape::Shape(const int n_vertices) : m_vertexCount(n_vertices) {
+    m_vertices = (unsigned *)calloc(n_vertices, sizeof(type_vertex_data_i)); }
 
 Shape::~Shape() { free(m_vertices); }
 
-void Shape::set_vdata(VDATA attribute, int vertex, Point &data)
-{
+void Shape::set_vdata(VDATA attribute, int vertex, Point &data){
     unsigned int *ptr = m_vertices + vertex * SIZE_STRIDE; // get to the vertex;
     int data_size;                                          //data size
 
-    switch (attribute)
-    {
+    switch (attribute){
     case POSITION:
         data_size = SIZE_POS;
         break;
@@ -32,22 +28,17 @@ void Shape::set_vdata(VDATA attribute, int vertex, Point &data)
     memcpy(ptr, data.coords, data_size * sizeof(unsigned int));
 }
 
-void Shape::set_pos(Point pos, int dest_vertex)
-{
-    set_vdata(POSITION, dest_vertex, pos);
-}
+void Shape::set_pos(Point pos, int dest_vertex)         { set_vdata(POSITION, dest_vertex, pos); }
 
-void Shape::set_color(Point color, int dest_vertex)
-{
-    set_vdata(COLOR, dest_vertex, color);
-}
-void Shape::set_texture(Point texture, int dest_vertex)
-{
-    set_vdata(TEXTURE, dest_vertex, texture);
-}
+void Shape::set_color(Point color, int dest_vertex)     { set_vdata(COLOR, dest_vertex, color); }
+
+void Shape::set_texture(Point texture, int dest_vertex) { set_vdata(TEXTURE, dest_vertex, texture); }
 
 unsigned Shape::get_vCount() { return m_vertexCount; }
+
 unsigned *Shape::get_vArray() { return m_vertices; }
+
+                        /// RECTANGLE ///
 
 Rectangle::Rectangle() : Rectangle(PROPORTION) {}
 Rectangle::Rectangle(int square_size) : Rectangle(square_size, square_size) {}
@@ -65,73 +56,74 @@ Rectangle::Rectangle(int w, int h, Point offset) : Shape(4)
     set_pos(Point(w + offset.get_x(), offset.get_y(), offset.get_z()), 2);
     set_pos(Point(w + offset.get_x(), h + offset.get_y(), offset.get_z()), 3);
 }
-unsigned int *Rectangle::element_buffer(bool reverse_order, unsigned int *dest)
-{
-    if (!reverse_order)
-    {
-        dest[0] = 0;
-        dest[3] = 0; //    /|  ; |''/
-        dest[1] = 3;
-        dest[4] = 3; //   / |  ; | /
-        dest[2] = 2;
-        dest[5] = 1; //  /__|  ; |/
-    }
-    else
-    {
-        dest[0] = 1;
-        dest[3] = 1; //  |\    ; \''|
-        dest[1] = 2;
-        dest[4] = 2; //  | \   ;  \ |
-        dest[2] = 0;
-        dest[5] = 3; //  |__\  ;   \|
-    }
-    return dest;
-}
-void Rectangle::get_buffer_data(float *vertex_array, unsigned int *element_array, bool reverse_order)
-{
-    vertex_buffer(vertex_array);
-    element_buffer(reverse_order, element_array);
-}
 
-Surface::Surface() : Shape(3) {}
+Surface::Surface() : Shape(4) {}
 Surface::Surface(int squares_w, int squares_h, int square_size)
-    : Shape((squares_w + 1) * (squares_h + 1)), m_width(squares_w), m_height(squares_h)
-{
-    int *ptr = vertex_data;
+    : Shape((squares_w + 1) * (squares_h + 1)), m_width(squares_w), m_height(squares_h){
+    
+    unsigned *ptr = m_vertices;
 
-    for (int x = 0; x <= (m_width * square_size); x += square_size)
-    {
-        for (int y = 0; y <= (m_height * square_size); y += square_size)
-        {
+    for (int x = 0; x <= (m_width * square_size); x += square_size){
+        for (int y = 0; y <= (m_height * square_size); y += square_size){
             *ptr++ = x;
             *ptr++ = y;
-            ptr += s_stride - 2; //skip to the next vertex
+             ptr += SIZE_STRIDE - 2; //skip to the next vertex
         }
     }
 }
-
-#define RECTANGLE(x, H)                          \
-    {                                            \
-        x, x + 1, x + H, x + 1, x + H, x + H + 1 \
-    }
-
-unsigned int *Surface::element_buffer(int w, int h, unsigned int *dest)
-{
-    for (int x = 0; x < m_width; x++)
-    {
-        for (int y = 0; y < m_height; y++)
-        {
-            unsigned int rectangle[] = RECTANGLE((unsigned)(x * m_height + y), m_height);
-            util::copy_duff_device(rectangle, dest, 6);
-        }
-    }
-    return dest;
+unsigned Surface::get_square_count() const{
+    return m_width * m_height;
 }
 
-void Surface::get_buffer_data(float *vertex_array, unsigned int *element_array, bool reverse_order)
-{
-    vertex_buffer(vertex_array);
-    element_buffer(m_width, m_height, element_array);
+
+float shapes::proportion(float n){
+    return n/PROPORTION;
 }
 
-#undef RECTANGLE
+size_t shapes::vertex_buffer_sizef(Shape *shape){
+    return shape->get_vCount() * SIZE_STRIDE * sizeof(float);
+}
+
+float* shapes::get_vBuffer(float* vBuffer, Shape &shape){
+    size_t count = vertex_buffer_sizef(&shape);
+    util::copy_duff_device(shape.get_vArray(), vBuffer, count);
+    util::operate_duff_device(vBuffer, count, proportion);
+    return vBuffer;
+}
+
+unsigned int *shapes::get_eBuffer_rectangle(unsigned int *eBuffer, bool invert, int bLeft, int tLeft, int bRight, int tRight){
+    if(!invert){
+        //// Diagonal
+        eBuffer[0] = bLeft; 
+        eBuffer[1] = tRight;
+        eBuffer[3] = bLeft;
+        eBuffer[4] = tRight;
+    //// --------
+        eBuffer[2] = tLeft;
+        eBuffer[5] = bRight;
+    }else{
+        //// Diagonal
+        eBuffer[0] = tLeft; 
+        eBuffer[1] = bRight;
+        eBuffer[3] = tLeft;
+        eBuffer[4] = bRight;
+    //// --------
+        eBuffer[2] = bLeft;
+        eBuffer[5] = tRight;
+    }
+    return eBuffer;
+}
+
+unsigned int *shapes::get_eBuffer_surface(unsigned int *eBuffer, Surface &surface){
+    unsigned int *ptr = (unsigned*)malloc(6 * surface.get_vCount());
+}
+
+shapes::vArray::vArray(Shape &shape){
+    array = (float*)malloc(vertex_buffer_sizef(&shape));
+    get_vBuffer(array, shape);
+}
+
+float *shapes::vArray::get_vertex_data(unsigned vertex){
+    return &array[vertex * SIZE_STRIDE];
+}
+

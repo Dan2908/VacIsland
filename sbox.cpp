@@ -9,15 +9,17 @@ typedef float position[3];
 int main(){
     int W = 5, H = 5;
     Surface S(W, H, 200);
-    int *vdata = S.get_vertex_data();
+
+    shapes::vArray vb(S);
+    float *vBuffer = vb.get_array();
 
     for(int i = W; i >= 0; i--){
         for(int j = 0; j <= H; j++){
-            printf("(%i, %i)\t", vdata[i*s_stride + j*(H+1)*s_stride], vdata[i*s_stride + j*(H+1)*s_stride + 1]);
+            float * p = vb.get_vertex_data(j*(H+1) + i);
+            printf("(%f, %f)\t", p[X],  p[Y]);
         }
         std::cout << std::endl;
     }
-
     return EXIT_SUCCESS;
 }
 

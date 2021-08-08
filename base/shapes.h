@@ -27,10 +27,10 @@ enum VDATA{
 };
 
 typedef unsigned int type_vertex_data_i[SIZE_STRIDE];
+typedef float        type_vertex_data_f[SIZE_STRIDE];
 
-class Shape
-{
-private:
+class Shape{
+protected:
     unsigned int m_vertexCount;
     unsigned int *m_vertices;
     /*! Sets the specified attribute in one vertex of the array with the given data.
@@ -48,38 +48,26 @@ public:
     unsigned *get_vArray();
 };
 
-
-class Rectangle : Shape
-{
-private:
-    unsigned int *element_buffer(bool reverse_order, unsigned int *dest);
+class Rectangle : public Shape{
 public:
     Rectangle();
     Rectangle(int square_size);
     Rectangle(int w, int h);
     Rectangle(int w, int h, Point offset);
-    void get_buffer_data(float *vertex_array, unsigned int *element_array, bool reverse_order);
 };
 
-class Surface : public Shape
-{
-    unsigned int *element_buffer(int w, int h, unsigned int *dest);
-
+class Surface : public Shape{
+private:
+    unsigned m_width, m_height;
 public:
     Surface();
+    /** Create a square 2d surface (z = 0) made up of squares 
+     * @param squares_w Number of squares if width.
+     * @param squares_h Number of squares if height.
+     * @param squares_size Size of each square's side. */
     Surface(int squares_w, int squares_h, int square_size);
-    // int *get_vertex_data() { return vertex_data; }
+    unsigned get_square_count() const;
 };
-
-unsigned int *Surface::element_buffer(int w, int h, unsigned int *dest)
-{
-    *dest++ = 0;
-    *dest++ = 1;
-    *dest++ = 4;
-    *dest++ = 1;
-    *dest++ = 4;
-    *dest++ = 5;
-}
 
                     ///                         ///
                     ///     NAMESPACE SHAPES    ///
@@ -90,40 +78,30 @@ namespace shapes
     float proportion(float n);
     /* Returns the shape vertex data size in bytes (size of float) */              
     size_t vertex_buffer_sizef(Shape *shape); 
-    /* Gets Shape's vertex (proportional) data to a given destination buffer array */
-    float* get_vBuffer(float* destination, Shape &shape);
-    /* Gets an element buffer to draw a rectangle using two triangles. Can inverst the diagonal using invert */
+    /* Gets Shape's vertex (proportional) data to a given vBuffer array */
+    float* get_vBuffer(float* vBuffer, Shape &shape);
+    /* Gets an element buffer to draw a rectangle using two triangles. Can invert the diagonal using invert */
     unsigned int *get_eBuffer_rectangle(unsigned int *eBuffer, bool invert, int bLeft, int tLeft, int bRight, int tRight);
-}
 
-float shapes::proportion(float n){
-    return n/PROPORTION;
-}
+    unsigned int *get_eBuffer_surface(unsigned int *eBuffer, Surface &surface);
 
-size_t shapes::vertex_buffer_sizef(Shape *shape){
-    return shape->get_vCount * SIZE_STRIDE * sizeof(float);
-}
+    class vArray{
+    private:
+        float *array;
+    public:
+        vArray(Shape &shape);
+        virtual float *get_array() {return array; }
+        virtual float *get_vertex_data(unsigned vertex);
+    };
 
-unsigned int *shapes::get_eBuffer_rectangle(unsigned int *eBuffer, bool invert, int bLeft, int tLeft, int bRight, int tRight){
-        if(!invert){
-        //// Diagonal
-            eBuffer[0] = bLeft; 
-            eBuffer[1] = tRight;
-            eBuffer[3] = bLeft;
-            eBuffer[4] = tRight;
-        //// --------
-            eBuffer[2] = tLeft;
-            eBuffer[5] = bRight;
-        }else{
-            //// Diagonal
-            eBuffer[0] = tLeft; 
-            eBuffer[1] = bRight;
-            eBuffer[3] = tLeft;
-            eBuffer[4] = bRight;
-        //// --------
-            eBuffer[2] = bLeft;
-            eBuffer[5] = tRight;
-        }
-    }
+    class eArray : public vArray{
+    private:
+        unsigned *array;
+    public:
+        eArray(Shape &shape);
+
+        unsigned *get_element_data();
+    };
+}
 
 #endif
